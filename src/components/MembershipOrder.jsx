@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash } from 'lucide-react';
+import { sendAlimtalk } from '../services/alimtalkService';
 
 const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
     const [selectedProductId, setSelectedProductId] = useState('');
@@ -109,8 +110,26 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
         };
 
         // Simulating backend logic...
-        setTimeout(() => {
+        setTimeout(async () => {
             onAddOrder(newOrder);
+
+            // 알림톡 발송 시작
+            try {
+                const result = await sendAlimtalk({
+                    receiver: phone,
+                    name: recipient,
+                    orderNumber: orderNo
+                });
+
+                if (result.success) {
+                    console.log('알림톡 발송 성공:', result.messageId);
+                } else {
+                    console.warn('알림톡 발송 실패:', result.error);
+                }
+            } catch (err) {
+                console.error('알림톡 발송 중 예외 발생:', err);
+            }
+
             setIsSubmitting(false);
             setShowKakaoModal(true);
         }, 800);
