@@ -6,9 +6,9 @@ const SOLAPI_BASE_URL = 'https://api.solapi.com/messages/v4/send';
 
 /**
  * 알림톡 발송 함수
- * @param {Object} params - { receiver: '01012345678', name: '홍길동', orderNumber: 'UNR-260308-001' }
+ * @param {Object} params - { receiver, name, productName, quantity, totalPrice, orderNumber }
  */
-export const sendAlimtalk = async ({ receiver, name, orderNumber }) => {
+export const sendAlimtalk = async ({ receiver, name, productName, quantity, totalPrice, orderNumber }) => {
     // 환경 변수 확인 (Vite 환경 변수는 import.meta.env 사용)
     const apiKey = import.meta.env.VITE_SOLAPI_API_KEY;
     const pfid = import.meta.env.VITE_SOLAPI_PFID;
@@ -31,8 +31,11 @@ export const sendAlimtalk = async ({ receiver, name, orderNumber }) => {
             pfid: pfid,
             templateId: templateId,
             variables: {
-                '#{이름}': name,
-                '#{주문번호}': orderNumber
+                '#{[이름]}': name,
+                '#{[주문상품]}': productName,
+                '#{[수량]}': String(quantity),
+                '#{[결제금액]}': `${totalPrice.toLocaleString()}원`,
+                '#{[주문번호]}': orderNumber
             }
         }
     };

@@ -118,6 +118,9 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                 const result = await sendAlimtalk({
                     receiver: phone,
                     name: recipient,
+                    productName: selectedProduct.name,
+                    quantity: quantity,
+                    totalPrice: totalPrice,
                     orderNumber: orderNo
                 });
 
