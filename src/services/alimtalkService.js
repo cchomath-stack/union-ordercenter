@@ -31,11 +31,11 @@ export const sendAlimtalk = async ({ receiver, name, productName, quantity, tota
             pfid: pfid,
             templateId: templateId,
             variables: {
-                '#{[이름]}': name,
-                '#{[주문상품]}': productName,
-                '#{[수량]}': String(quantity),
-                '#{[결제금액]}': `${totalPrice.toLocaleString()}원`,
-                '#{[주문번호]}': orderNumber
+                '#{이름}': name,
+                '#{주문상품}': productName,
+                '#{수량}': String(quantity),
+                '#{결제금액}': `${totalPrice.toLocaleString()}원`,
+                '#{주문번호}': orderNumber
             }
         }
     };
