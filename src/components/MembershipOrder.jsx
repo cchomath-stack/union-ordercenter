@@ -1,43 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash, Copy, Check } from 'lucide-react';
+import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash, Copy, Check, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { sendAlimtalk } from '../services/alimtalkService';
 
-const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
-    const [selectedProductId, setSelectedProductId] = useState('');
-    const [quantity, setQuantity] = useState(1);
+const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) => {
+    const isYakView = viewType === 'yak_order';
+    const categoryFilter = isYakView ? 'yak' : 'union';
+    const filteredProducts = products.filter(p => !p.category || p.category === categoryFilter);
+
+    // Form states
     const [recipient, setRecipient] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [membershipKey, setMembershipKey] = useState('');
-    const [receiptType, setReceiptType] = useState('현금영수증'); // 현금영수증, 세금계산서
+    const [receiptType, setReceiptType] = useState('현금영수증');
     const [bizNumber, setBizNumber] = useState('');
+
+    // Cart states
+    const [selectedProductId, setSelectedProductId] = useState('');
+    const [quantity, setQuantity] = useState(1);
+    const [cartItems, setCartItems] = useState([]);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showKakaoModal, setShowKakaoModal] = useState(false);
     const [generatedOrderNo, setGeneratedOrderNo] = useState('');
-    const [totalPrice, setTotalPrice] = useState(0);
     const [copySuccess, setCopySuccess] = useState(false);
 
     const resetForm = () => {
-        setSelectedProductId('');
-        setQuantity(1);
         setRecipient('');
         setPhone('');
         setAddress('');
         setMembershipKey('');
         setReceiptType('현금영수증');
         setBizNumber('');
+        setCartItems([]);
     };
-
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === 'Escape' && showKakaoModal) {
-                setShowKakaoModal(false);
-                resetForm();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [showKakaoModal]);
 
     const autoHyphen = (value) => {
         return value
@@ -46,23 +42,36 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
             .replace(/(\-{1,2})$/g, "");
     };
 
-    const handlePhoneChange = (e) => {
-        setPhone(autoHyphen(e.target.value));
+    const addToCart = () => {
+        if (!selectedProductId) {
+            alert('상품을 먼저 선택해주세요.');
+            return;
+        }
+        const product = filteredProducts.find(p => p.id === Number(selectedProductId));
+        if (!product) return;
+
+        const discountedPrice = Math.floor(product.price * (1 - (product.discount || 0) / 100));
+
+        const newItem = {
+            id: Date.now(),
+            productId: product.id,
+            name: product.name,
+            originalPrice: product.price,
+            price: discountedPrice,
+            quantity: quantity,
+            total: discountedPrice * quantity
+        };
+
+        setCartItems([...cartItems, newItem]);
+        setSelectedProductId('');
+        setQuantity(1);
     };
 
-    const [originalPrice, setOriginalPrice] = useState(0);
+    const removeFromCart = (id) => {
+        setCartItems(cartItems.filter(item => item.id !== id));
+    };
 
-    useEffect(() => {
-        const product = products.find(p => p.id === Number(selectedProductId));
-        if (product) {
-            setOriginalPrice(product.price * quantity);
-            const priceAfterDiscount = product.price - (product.price * (product.discount || 0) / 100);
-            setTotalPrice(Math.floor(priceAfterDiscount * quantity));
-        } else {
-            setOriginalPrice(0);
-            setTotalPrice(0);
-        }
-    }, [selectedProductId, quantity, products]);
+    const totalOrderPrice = cartItems.reduce((sum, item) => sum + item.total, 0);
 
     const handleCopyOrderNo = () => {
         navigator.clipboard.writeText(generatedOrderNo);
@@ -70,49 +79,50 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
         setTimeout(() => setCopySuccess(false), 2000);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!recipient || !phone || !address || !membershipKey.trim()) {
+        if (cartItems.length === 0) {
+            alert('장바구니에 상품을 최소 하나 이상 담아주세요.');
+            return;
+        }
+
+        if (!recipient || !phone || !address || (!isYakView && !membershipKey.trim())) {
             alert('모든 필수 정보를 입력해주세요.');
             return;
         }
 
-        // Check if the entered membership key exists in the memberships array (case-insensitive)
-        const enteredKey = membershipKey.trim().toLowerCase();
-        const validMembership = memberships.find(m => m.membershipKey.toLowerCase().trim() === enteredKey);
-
-        if (!validMembership) {
-            alert(`유효하지 않은 멤버십 키입니다. 입력하신 [${membershipKey}]와 일치하는 회원을 찾을 수 없습니다. (대소문자 무관)`);
-            return;
+        if (!isYakView) {
+            const enteredKey = membershipKey.trim().toLowerCase();
+            const validMembership = memberships.find(m => m.membershipKey.toLowerCase().trim() === enteredKey);
+            if (!validMembership) {
+                alert(`유효하지 않은 멤버십 키입니다. 입력하신 [${membershipKey}]와 일치하는 회원을 찾을 수 없습니다.`);
+                return;
+            }
         }
 
-        const selectedProduct = products.find(p => p.id === Number(selectedProductId));
-        if (!selectedProduct) {
-            alert('상품을 선택해주세요.');
-            return;
-        }
-
-        const brandType = selectedProduct.name.includes('R') ? 'UNR' : selectedProduct.name.includes('X') ? 'UNX' : 'YAK';
-        const orderNo = `${brandType}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+        const brandPrefix = isYakView ? 'YAK' : 'UNM';
+        const orderNo = `${brandPrefix}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
         setGeneratedOrderNo(orderNo);
         setIsSubmitting(true);
 
+        const orderItemsText = cartItems.map(item => `${item.name} (${item.quantity}부)`).join(', ');
+
         const newOrder = {
             id: orderNo,
-            type: brandType,
+            type: brandPrefix,
             customer: recipient,
             phone: phone,
-            item: `${selectedProduct.name} (${quantity}부)`,
+            item: orderItemsText,
             payment_status: '대기',
             delivery_status: '배송전',
             receipt_type: receiptType,
-            receipt_status: receiptType === '없음' ? '-' : '발행전',
+            receipt_status: '발행전',
             biz_number: bizNumber,
             date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            amount: totalPrice,
-            quantity: parseInt(quantity),
+            amount: totalOrderPrice,
+            quantity: cartItems.reduce((sum, i) => sum + i.quantity, 0),
             address: address,
             membershipKey: membershipKey
         };
@@ -121,86 +131,123 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
         setTimeout(async () => {
             onAddOrder(newOrder);
 
-            // 알림톡 발송 시작
             try {
                 const result = await sendAlimtalk({
                     receiver: phone,
                     name: recipient,
-                    productName: selectedProduct.name,
-                    quantity: quantity,
-                    totalPrice: totalPrice,
+                    productName: orderItemsText.length > 25 ? `${orderItemsText.slice(0, 22)}...` : orderItemsText,
+                    quantity: cartItems.reduce((sum, i) => sum + i.quantity, 0),
+                    totalPrice: totalOrderPrice,
                     orderNumber: orderNo
                 });
 
                 if (result.success) {
-                    console.log('알림톡 발송 성공:', result.data);
                     setShowKakaoModal(true);
                 } else {
-                    console.warn('알림톡 발송 실패:', result.error);
-                    alert(`주문은 접수되었으나, 알림톡 발송에 실패했습니다.\n사유: ${result.error}\n\n관리자 페이지에서 주문 내역을 확인해 주세요.`);
+                    alert(`주문은 접수되었으나, 알림톡 발송에 실패했습니다.\n사유: ${result.error}`);
                 }
             } catch (err) {
-                console.error('알림톡 발송 중 예외 발생:', err);
                 alert('주문은 접수되었으나, 네트워크 오류로 알림톡 발송에 실패했습니다.');
             }
-
             setIsSubmitting(false);
         }, 800);
     };
 
     return (
-        <div className="card" style={{ maxWidth: '600px', width: '100%', padding: '2.5rem' }}>
-            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>멤버십 주문하기</h2>
-                <p style={{ color: 'var(--text-secondary)' }}>정보를 입력하시면 자동으로 확정 금액이 계산됩니다.</p>
+        <div className="card" style={{ maxWidth: '700px', width: '100%', padding: '2rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+                    {isYakView ? '약술형 논술 주문하기' : '유니온 멤버십 주문'}
+                </h2>
+                <p style={{ color: 'var(--text-secondary)' }}>상품을 선택해 장바구니에 담아주세요.</p>
             </div>
 
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label className="form-label">신청 상품</label>
+            {/* Product Selection */}
+            <div className="cart-builder" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderRadius: '20px', marginBottom: '2rem', border: '1px solid var(--border-glass)' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                    <label className="form-label">상품 선택</label>
                     <div style={{ position: 'relative' }}>
                         <select
                             value={selectedProductId}
                             onChange={(e) => setSelectedProductId(e.target.value)}
                             style={{ paddingLeft: '3rem' }}
-                            disabled={isSubmitting}
                         >
                             <option value="">상품을 선택하세요</option>
-                            {products.map(p => {
-                                const discountedPrice = p.price - (p.price * (p.discount || 0) / 100);
-                                return (
-                                    <option key={p.id} value={p.id}>
-                                        {p.name} {p.discount > 0 ? `(${p.discount}% 할인: ${Math.floor(discountedPrice).toLocaleString()}원)` : `(${p.price.toLocaleString()}원)`}
-                                    </option>
-                                );
-                            })}
+                            {filteredProducts.map(p => (
+                                <option key={p.id} value={p.id}>{p.name} ({p.price.toLocaleString()}원)</option>
+                            ))}
                         </select>
                         <Package size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                     </div>
                 </div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label className="form-label">신청 부수</label>
-                    <div style={{ position: 'relative' }}>
-                        <input
-                            type="number"
-                            min="1"
-                            value={quantity}
-                            onChange={(e) => setQuantity(Number(e.target.value))}
-                            style={{ paddingLeft: '3rem' }}
-                            disabled={isSubmitting}
-                        />
-                        <Hash size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1 }}>
+                        <label className="form-label">수량</label>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type="number"
+                                min="1"
+                                value={quantity}
+                                onChange={(e) => setQuantity(Number(e.target.value))}
+                                style={{ paddingLeft: '3rem' }}
+                            />
+                            <Hash size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                        </div>
+                    </div>
+                    <button
+                        onClick={addToCart}
+                        className="btn-primary"
+                        style={{ height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <Plus size={18} /> 담기
+                    </button>
+                </div>
+            </div>
+
+            {/* Cart List */}
+            {cartItems.length > 0 && (
+                <div style={{ marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--accent-teal)' }}>
+                        <ShoppingCart size={18} />
+                        <span style={{ fontWeight: 800 }}>선택된 상품 ({cartItems.length})</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {cartItems.map(item => (
+                            <div key={item.id} style={{
+                                padding: '1rem 1.25rem',
+                                background: '#fff',
+                                borderRadius: '16px',
+                                border: '1px solid var(--border-glass)',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.02)'
+                            }}>
+                                <div style={{ textAlign: 'left' }}>
+                                    <p style={{ fontWeight: 700, margin: 0, fontSize: '0.95rem' }}>{item.name}</p>
+                                    <small style={{ color: 'var(--text-muted)' }}>{item.price.toLocaleString()}원 × {item.quantity}부</small>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <span style={{ fontWeight: 800, color: 'var(--accent-teal)' }}>{item.total.toLocaleString()}원</span>
+                                    <button onClick={() => removeFromCart(item.id)} style={{ padding: '0.5rem', color: '#ff4d4d', background: 'none' }}>
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
+            )}
 
+            <form onSubmit={handleSubmit}>
                 <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                     <div className="input-group">
                         <label className="form-label">받는 사람 (필수)</label>
                         <div style={{ position: 'relative' }}>
                             <input
                                 type="text"
-                                placeholder="성함을 입력하세요"
+                                placeholder="성함"
                                 value={recipient}
                                 onChange={(e) => setRecipient(e.target.value)}
                                 style={{ paddingLeft: '3rem' }}
@@ -214,9 +261,9 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                         <div style={{ position: 'relative' }}>
                             <input
                                 type="text"
-                                placeholder="010-0000-0000"
                                 value={phone}
-                                onChange={handlePhoneChange}
+                                onChange={(e) => setPhone(autoHyphen(e.target.value))}
+                                placeholder="010-0000-0000"
                                 maxLength={13}
                                 style={{ paddingLeft: '3rem' }}
                                 disabled={isSubmitting}
@@ -226,22 +273,24 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                     </div>
                 </div>
 
-                <div className="input-group" style={{ marginBottom: '1.5rem' }}>
-                    <label className="form-label">멤버십 고유 키 (필수)</label>
-                    <div style={{ position: 'relative' }}>
-                        <input
-                            type="text"
-                            placeholder="전용 키를 입력하세요"
-                            value={membershipKey}
-                            onChange={(e) => setMembershipKey(e.target.value)}
-                            style={{ paddingLeft: '3rem' }}
-                            disabled={isSubmitting}
-                        />
-                        <CreditCard size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                {!isYakView && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <label className="form-label">멤버십 고유 키 (필수)</label>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type="text"
+                                placeholder="전용 키 입력"
+                                value={membershipKey}
+                                onChange={(e) => setMembershipKey(e.target.value)}
+                                style={{ paddingLeft: '3rem' }}
+                                disabled={isSubmitting}
+                            />
+                            <CreditCard size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div style={{ marginBottom: '2rem' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
                     <label className="form-label">배송 주소 (필수)</label>
                     <div style={{ position: 'relative' }}>
                         <textarea
@@ -255,162 +304,58 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                     </div>
                 </div>
 
-                <div className="p-3 bg-white bg-opacity-5 rounded border border-white border-opacity-10 mb-4">
-                    <label className="fw-bold small mb-2 d-block">📑 증빙 서류 신청</label>
+                {/* Receipt Section */}
+                <div style={{ padding: '1.25rem', background: 'rgba(0,0,0,0.02)', borderRadius: '16px', border: '1px solid var(--border-glass)', marginBottom: '2rem' }}>
+                    <label className="form-label" style={{ marginBottom: '1rem', display: 'block' }}>📑 증빙 서류 신청</label>
                     <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <select
-                            value={receiptType}
-                            onChange={(e) => setReceiptType(e.target.value)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)' }}
-                            disabled={isSubmitting}
-                        >
+                        <select value={receiptType} onChange={(e) => setReceiptType(e.target.value)} disabled={isSubmitting}>
                             <option value="현금영수증">현금영수증</option>
                             <option value="세금계산서">세금계산서</option>
                         </select>
                         <input
                             type="text"
-                            placeholder={receiptType === '세금계산서' ? '사업자번호 ' : '휴대폰번호/사업자번호'}
+                            placeholder={receiptType === '세금계산서' ? '사업자번호' : '휴대폰번호'}
                             value={bizNumber}
                             onChange={(e) => setBizNumber(e.target.value)}
                             disabled={isSubmitting}
                         />
                     </div>
-                    {receiptType === '세금계산서' && (
-                        <p style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--accent-teal)', fontWeight: 600 }}>
-                            * 첫 거래 시 채널로 사업자등록증 전달 필수
-                        </p>
-                    )}
                 </div>
 
-                {
-                    totalPrice > 0 && (
-                        <div style={{
-                            background: 'rgba(0, 242, 254, 0.05)',
-                            border: '1px solid rgba(0, 242, 254, 0.2)',
-                            padding: '1.5rem',
-                            borderRadius: '16px',
-                            marginBottom: '2rem',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>최종 결제 금액</span>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
-                                {originalPrice > totalPrice && (
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
-                                        {originalPrice.toLocaleString()}원
-                                    </span>
-                                )}
-                                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-teal)' }}>{totalPrice.toLocaleString()}원</span>
-                            </div>
-                        </div>
-                    )
-                }
+                {totalOrderPrice > 0 && (
+                    <div style={{ background: 'rgba(0, 242, 254, 0.05)', border: '1px solid rgba(0, 242, 254, 0.2)', padding: '1.5rem', borderRadius: '16px', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 700 }}>총 결제 금액</span>
+                        <span style={{ fontSize: '1.5rem', fontWeight: 950, color: 'var(--accent-teal)' }}>{totalOrderPrice.toLocaleString()}원</span>
+                    </div>
+                )}
 
                 <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                    <p style={{ color: '#ff4d4d', fontSize: '0.9rem', fontWeight: 700 }}>
-                        ⚠️ 카드 결제는 지원되지 않으며, 계좌 이체만 가능합니다.
-                    </p>
+                    <p style={{ color: '#ff4d4d', fontSize: '0.9rem', fontWeight: 700 }}>⚠️ 카드 결제 불가 (계좌 이체 전용)</p>
                 </div>
 
-                <button
-                    type="submit"
-                    className="btn btn-teal w-100"
-                    style={{ padding: '1.25rem', fontSize: '1.1rem', fontWeight: 700, borderRadius: '16px' }}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? '처리 중...' : <>주문 완료하기 <ChevronRight size={20} style={{ marginLeft: '0.5rem' }} /></>}
+                <button type="submit" className="btn btn-teal w-100" style={{ height: '64px', fontSize: '1.2rem' }} disabled={isSubmitting || cartItems.length === 0}>
+                    {isSubmitting ? '처리 중...' : '주문 완료하기'}
                 </button>
-            </form >
+            </form>
 
-            {/* Kakao Simulation Modal */}
-            {
-                showKakaoModal && (
-                    <div
-                        onClick={() => { setShowKakaoModal(false); resetForm(); }}
-                        style={{
-                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                            backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                        }}
-                    >
-                        <div
-                            className="card"
-                            onClick={(e) => e.stopPropagation()}
-                            style={{
-                                maxWidth: '400px',
-                                width: '90%',
-                                textAlign: 'center',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                padding: 0,
-                                background: '#ffffff',
-                                borderRadius: '24px',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            <div style={{ background: '#F7E600', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ background: '#3A1D1D', color: '#F7E600', padding: '6px 14px', borderRadius: '20px', fontWeight: 900, fontSize: '0.75rem' }}>KAKAOTALK</div>
-                                <span style={{ color: '#3A1D1D', fontWeight: 800, fontSize: '1.1rem' }}>UNION 모의고사</span>
-                            </div>
-                            <div style={{ padding: '2.5rem 2rem' }}>
-                                <h3 style={{ marginBottom: '1.5rem', color: '#1a1a1a', fontSize: '1.6rem', fontWeight: 900 }}>알림톡 발송 완료!</h3>
-                                <div style={{ color: '#444', fontSize: '1rem', lineHeight: '1.7', marginBottom: '2.5rem' }}>
-                                    <span style={{ color: 'var(--accent-teal)', fontWeight: 800 }}>{recipient}</span>님,<br />
-                                    입력하신 연락처로 안내가 전송되었습니다.
-
-                                    <div style={{
-                                        marginTop: '1.5rem',
-                                        padding: '1rem',
-                                        background: '#f8f9fa',
-                                        borderRadius: '12px',
-                                        border: '1px solid #eee',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.5rem'
-                                    }}>
-                                        <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 700 }}>나의 주문 번호</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                                            <span style={{ color: '#1a1a1a', fontWeight: 950, fontSize: '1.2rem', letterSpacing: '0.05em' }}>{generatedOrderNo}</span>
-                                            <button
-                                                onClick={handleCopyOrderNo}
-                                                style={{
-                                                    padding: '6px',
-                                                    background: '#fff',
-                                                    border: '1px solid #ddd',
-                                                    borderRadius: '8px',
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    color: copySuccess ? '#22c55e' : '#666'
-                                                }}
-                                            >
-                                                {copySuccess ? <Check size={16} /> : <Copy size={16} />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button
-                                    className="btn btn-teal w-100"
-                                    style={{
-                                        borderRadius: '16px',
-                                        height: '56px',
-                                        fontWeight: 800,
-                                        fontSize: '1.1rem',
-                                        boxShadow: '0 8px 20px rgba(0, 242, 254, 0.2)'
-                                    }}
-                                    onClick={() => {
-                                        setShowKakaoModal(false);
-                                        resetForm();
-                                    }}
-                                >
-                                    확인 완료
-                                </button>
+            {/* Kakao Modal (Simplified for brevity but functional) */}
+            {showKakaoModal && (
+                <div onClick={() => { setShowKakaoModal(false); resetForm(); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+                    <div className="card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', width: '100%', padding: '2.5rem', textAlign: 'center', background: '#fff' }}>
+                        <div style={{ background: '#F7E600', padding: '1rem', borderRadius: '16px', marginBottom: '1.5rem', fontWeight: 800 }}>알림톡 발송 완료</div>
+                        <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>주문이 접수되었습니다!</h3>
+                        <div style={{ background: '#f8f9fa', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
+                            <p style={{ fontSize: '0.8rem', color: '#888', margin: '0 0 5px 0' }}>주문번호</p>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontWeight: 900, fontSize: '1.1rem' }}>{generatedOrderNo}</span>
+                                <button onClick={handleCopyOrderNo} style={{ background: 'none' }}>{copySuccess ? <Check size={18} color="#22c55e" /> : <Copy size={18} />}</button>
                             </div>
                         </div>
+                        <button className="btn btn-teal w-100" onClick={() => { setShowKakaoModal(false); resetForm(); }}>확인 완료</button>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 };
 

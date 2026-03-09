@@ -387,6 +387,81 @@ tr:hover td {
   opacity: 1;
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+
+  h1 {
+    font-size: 2.2rem !important;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.6rem !important;
+  }
+
+  p {
+    font-size: 0.95rem !important;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .luxury-table-container {
+    overflow-x: auto;
+  }
+
+  .luxury-table td,
+  .luxury-table th {
+    padding: 1rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  aside {
+    width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-glass);
+  }
+
+  main {
+    margin-left: 0 !important;
+    padding: 1rem !important;
+  }
+
+  .nav-item {
+    font-size: 0.85rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 0.95rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .btn-primary,
+  .btn-teal {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 1rem !important;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -4,11 +4,12 @@ import AdminPanel from './components/AdminPanel';
 import MembershipOrder from './components/MembershipOrder';
 import { Settings, ShieldCheck, List, Users, BarChart3, LogOut, Search, Package, Plus, Sun, Moon, StickyNote, Key } from 'lucide-react';
 
+// Version: 2026.03.09.v2 - Mobile Overhaul & Multi-Cart System
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState('orders'); // orders, manual_order, customers, memberships, stats, products, memos
-  const [userView, setUserView] = useState('search'); // search, membership
+  const [userView, setUserView] = useState('search'); // search, union_order, yak_order
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState(() => {
     const saved = localStorage.getItem('csm17_products');
@@ -89,7 +90,7 @@ function App() {
     const path = window.location.pathname;
     const search = window.location.search;
     if (path.includes('/membership') || path.includes('/order') || search.includes('view=membership')) {
-      setUserView('membership');
+      setUserView('union_order');
     }
   }, []);
 
@@ -179,7 +180,7 @@ function App() {
       {!isAdmin ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <header style={{
-            padding: '1.5rem 2rem',
+            padding: '1rem 1.5rem',
             background: 'var(--bg-panel)',
             backdropFilter: 'blur(16px)',
             borderBottom: '1px solid var(--border-glass)',
@@ -190,10 +191,10 @@ function App() {
             top: 0,
             zIndex: 1000
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <img src="/images/logo.png" alt="CSM17 Logo" style={{ width: '100px', height: 'auto' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <img src="/images/logo.png" alt="CSM17 Logo" style={{ width: '80px', height: 'auto' }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <div
                 onClick={() => setIsAdmin(true)}
                 style={{
@@ -216,85 +217,73 @@ function App() {
           </header>
 
           <nav style={{
-            padding: '1rem 2rem',
+            padding: '0 1rem',
             display: 'flex',
-            gap: '1.5rem',
-            justifyContent: 'center',
-            background: 'var(--bg-glass)',
-            borderBottom: '1px solid var(--border-glass)'
+            gap: '0.5rem',
+            justifyContent: 'flex-start',
+            overflowX: 'auto',
+            whiteSpace: 'nowrap',
+            background: 'var(--bg-panel)',
+            borderBottom: '1px solid var(--border-glass)',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
           }}>
-            <button
-              onClick={() => setUserView('search')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: userView === 'search' ? 'var(--accent-teal)' : 'var(--text-secondary)',
-                fontWeight: 700,
-                padding: '0.5rem 1rem',
-                borderBottom: userView === 'search' ? '2px solid var(--accent-teal)' : '2px solid transparent',
-                cursor: 'pointer'
-              }}
-            >
-              주문번호 조회
-            </button>
-            <button
-              onClick={() => setUserView('membership')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: userView === 'membership' ? 'var(--accent-teal)' : 'var(--text-secondary)',
-                fontWeight: 700,
-                padding: '0.5rem 1rem',
-                borderBottom: userView === 'membership' ? '2px solid var(--accent-teal)' : '2px solid transparent',
-                cursor: 'pointer'
-              }}
-            >
-              멤버십 주문하기
-            </button>
-            <a
-              href="https://pf.kakao.com/_pqQCn"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                textDecoration: 'none',
-                color: 'var(--text-secondary)',
-                fontWeight: 700,
-                padding: '0.5rem 1rem',
-                borderBottom: '2px solid transparent',
-                cursor: 'pointer',
-                fontSize: '0.9rem'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-teal)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-            >
-              유니온채널
-            </a>
-            <a
-              href="https://pf.kakao.com/_kWwJn"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                textDecoration: 'none',
-                color: 'var(--text-secondary)',
-                fontWeight: 700,
-                padding: '0.5rem 1rem',
-                borderBottom: '2px solid transparent',
-                cursor: 'pointer',
-                fontSize: '0.9rem'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-teal)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-            >
-              약술채널
-            </a>
+            {[
+              { id: 'search', label: '주문조회' },
+              { id: 'union_order', label: '유니온 멤버십 주문' },
+              { id: 'yak_order', label: '약술 주문' },
+              { id: 'union_channel', label: '유니온 채널', link: 'https://pf.kakao.com/_pqQCn' },
+              { id: 'yak_channel', label: '약술 채널', link: 'https://pf.kakao.com/_kWwJn' }
+            ].map(item => (
+              item.link ? (
+                <a
+                  key={item.id}
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    textDecoration: 'none',
+                    color: 'var(--text-secondary)',
+                    fontWeight: 700,
+                    padding: '1rem 0.75rem',
+                    fontSize: '0.85rem',
+                    display: 'inline-block'
+                  }}
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => setUserView(item.id)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: userView === item.id ? 'var(--accent-teal)' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    padding: '1rem 0.75rem',
+                    borderBottom: userView === item.id ? '2px solid var(--accent-teal)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {item.label}
+                </button>
+              )
+            ))}
           </nav>
 
-          <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 2rem' }}>
-
-            {userView === 'search' ? (
-              <UserSearch orders={orders} />
-            ) : (
-              <MembershipOrder products={products} onAddOrder={addOrder} memberships={memberships} />
+          <main style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '1.5rem 1rem' }}>
+            {userView === 'search' && <UserSearch orders={orders} />}
+            {(userView === 'union_order' || userView === 'yak_order') && (
+              <MembershipOrder
+                key={userView}
+                viewType={userView}
+                products={products}
+                onAddOrder={addOrder}
+                memberships={memberships}
+              />
             )}
           </main>
         </div >

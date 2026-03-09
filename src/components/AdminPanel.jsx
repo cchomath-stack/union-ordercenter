@@ -3,7 +3,7 @@ import {
     Plus, List, Database, Copy, Check, Filter, User, Users, Package,
     Briefcase, TrendingUp, BarChart3, Search, Phone, CreditCard,
     ChevronRight, ShoppingBag, Calendar, Truck, FileText, X,
-    ArrowUpDown, Hash, MoreHorizontal, Trash2, StickyNote, ShieldCheck
+    ArrowUpDown, Hash, MoreHorizontal, Trash2, StickyNote, ShieldCheck, LogOut
 } from 'lucide-react';
 
 const AdminPanel = ({
@@ -11,7 +11,6 @@ const AdminPanel = ({
     newProductName, setNewProductName, newProductPrice, setNewProductPrice,
     newProductDiscount, setNewProductDiscount,
     editingProductId, setEditingProductId, editPrice, setEditPrice,
-    editDiscount, setEditDiscount,
     customer, setCustomer, item, setItem, type, setType, copied, setCopied,
     selectedCustomer, setSelectedCustomer, checklists = {}, setChecklists,
     memos = [], setMemos, members = [], setMembers, memberships = [], setMemberships,
@@ -53,6 +52,9 @@ const AdminPanel = ({
     const [newMembershipKey, setNewMembershipKey] = React.useState('');
     const [membershipType, setMembershipType] = React.useState('X'); // X, R, Y (약술)
     const [editingMembership, setEditingMembership] = React.useState(null);
+
+    // Product Management States
+    const [newProductCategory, setNewProductCategory] = React.useState('union'); // union, yak
 
     // Auto-generate membership key
     React.useEffect(() => {
@@ -776,12 +778,14 @@ const AdminPanel = ({
                 id: Date.now(),
                 name: newProductName,
                 price: Number(newProductPrice),
-                discount: Number(newProductDiscount) || 0
+                discount: Number(newProductDiscount) || 0,
+                category: newProductCategory
             };
             onUpdateProducts([...products, newProduct]);
             setNewProductName('');
             setNewProductPrice('');
             setNewProductDiscount('0');
+            setNewProductCategory('union');
         };
 
         const handleDeleteProduct = (id) => {
