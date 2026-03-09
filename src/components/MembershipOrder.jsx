@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash } from 'lucide-react';
+import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash, Copy, Check } from 'lucide-react';
 import { sendAlimtalk } from '../services/alimtalkService';
 
 const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
@@ -13,8 +13,8 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
     const [bizNumber, setBizNumber] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showKakaoModal, setShowKakaoModal] = useState(false);
-    const [generatedOrderNo, setGeneratedOrderNo] = useState('');
     const [totalPrice, setTotalPrice] = useState(0);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     const resetForm = () => {
         setSelectedProductId('');
@@ -62,6 +62,12 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
             setTotalPrice(0);
         }
     }, [selectedProductId, quantity, products]);
+
+    const handleCopyOrderNo = () => {
+        navigator.clipboard.writeText(generatedOrderNo);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -313,35 +319,80 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                         onClick={() => { setShowKakaoModal(false); resetForm(); }}
                         style={{
                             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                            backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
+                            backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                         }}
                     >
                         <div
                             className="card"
                             onClick={(e) => e.stopPropagation()}
-                            style={{ maxWidth: '400px', width: '90%', textAlign: 'center', border: '1px solid var(--accent-teal)', padding: 0 }}
+                            style={{
+                                maxWidth: '400px',
+                                width: '90%',
+                                textAlign: 'center',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                padding: 0,
+                                background: '#ffffff',
+                                borderRadius: '24px',
+                                overflow: 'hidden'
+                            }}
                         >
-                            <div style={{ background: '#F7E600', padding: '1.5rem', borderRadius: '12px 12px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ background: '#3A1D1D', color: '#F7E600', padding: '8px 16px', borderRadius: '20px', fontWeight: 900, fontSize: '0.8rem' }}>KAKAOTALK</div>
+                            <div style={{ background: '#F7E600', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{ background: '#3A1D1D', color: '#F7E600', padding: '6px 14px', borderRadius: '20px', fontWeight: 900, fontSize: '0.75rem' }}>KAKAOTALK</div>
                                 <span style={{ color: '#3A1D1D', fontWeight: 800, fontSize: '1.1rem' }}>UNION 모의고사</span>
                             </div>
-                            <div style={{ padding: '2rem' }}>
-                                <h3 style={{ marginBottom: '1rem', color: '#fff', fontSize: '1.5rem' }}>알림톡 발송 완료!</h3>
-                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '2rem' }}>
-                                    <span style={{ color: 'var(--accent-teal)', fontWeight: 700 }}>{recipient}</span>님,<br />
-                                    주문번호 <span style={{ color: '#fff' }}>[{generatedOrderNo}]</span>가<br />
-                                    카카오톡으로 안전하게 전송되었습니다.
-                                </p>
+                            <div style={{ padding: '2.5rem 2rem' }}>
+                                <h3 style={{ marginBottom: '1.5rem', color: '#1a1a1a', fontSize: '1.6rem', fontWeight: 900 }}>알림톡 발송 완료!</h3>
+                                <div style={{ color: '#444', fontSize: '1rem', lineHeight: '1.7', marginBottom: '2.5rem' }}>
+                                    <span style={{ color: 'var(--accent-teal)', fontWeight: 800 }}>{recipient}</span>님,<br />
+                                    입력하신 연락처로 안내가 전송되었습니다.
+
+                                    <div style={{
+                                        marginTop: '1.5rem',
+                                        padding: '1rem',
+                                        background: '#f8f9fa',
+                                        borderRadius: '12px',
+                                        border: '1px solid #eee',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.5rem'
+                                    }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 700 }}>나의 주문 번호</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                                            <span style={{ color: '#1a1a1a', fontWeight: 950, fontSize: '1.2rem', letterSpacing: '0.05em' }}>{generatedOrderNo}</span>
+                                            <button
+                                                onClick={handleCopyOrderNo}
+                                                style={{
+                                                    padding: '6px',
+                                                    background: '#fff',
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    color: copySuccess ? '#22c55e' : '#666'
+                                                }}
+                                            >
+                                                {copySuccess ? <Check size={16} /> : <Copy size={16} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button
                                     className="btn btn-teal w-100"
-                                    style={{ borderRadius: '12px', height: '50px', fontWeight: 700 }}
+                                    style={{
+                                        borderRadius: '16px',
+                                        height: '56px',
+                                        fontWeight: 800,
+                                        fontSize: '1.1rem',
+                                        boxShadow: '0 8px 20px rgba(0, 242, 254, 0.2)'
+                                    }}
                                     onClick={() => {
                                         setShowKakaoModal(false);
                                         resetForm();
                                     }}
                                 >
-                                    확인
+                                    확인 완료
                                 </button>
                             </div>
                         </div>
