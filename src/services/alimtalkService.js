@@ -63,7 +63,7 @@ export const sendAlimtalk = async ({ receiver, name, productName, quantity, tota
                 from: senderNumber,
                 type: 'ATA',
                 kakaoOptions: {
-                    pfid: pfid,
+                    pfId: pfid,
                     templateId: templateId,
                     variables: {
                         '#{이름}': name,

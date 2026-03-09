@@ -133,16 +133,18 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                 });
 
                 if (result.success) {
-                    console.log('알림톡 발송 성공:', result.messageId);
+                    console.log('알림톡 발송 성공:', result.data);
+                    setShowKakaoModal(true);
                 } else {
                     console.warn('알림톡 발송 실패:', result.error);
+                    alert(`주문은 접수되었으나, 알림톡 발송에 실패했습니다.\n사유: ${result.error}\n\n관리자 페이지에서 주문 내역을 확인해 주세요.`);
                 }
             } catch (err) {
                 console.error('알림톡 발송 중 예외 발생:', err);
+                alert('주문은 접수되었으나, 네트워크 오류로 알림톡 발송에 실패했습니다.');
             }
 
             setIsSubmitting(false);
-            setShowKakaoModal(true);
         }, 800);
     };
 
