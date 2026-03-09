@@ -22,6 +22,13 @@ const AdminPanel = ({
     const [loginPassword, setLoginPassword] = React.useState('');
     const [loginError, setLoginError] = React.useState(false);
 
+    const autoHyphen = (value) => {
+        return value
+            .replace(/[^0-9]/g, '')
+            .replace(/^(\d{0,3})(\d{0,4})(\d{0,4})$/g, "$1-$2-$3")
+            .replace(/(\-{1,2})$/g, "");
+    };
+
     const handleLogin = (e) => {
         e.preventDefault();
         if (loginPassword === 'csm17admin') {
@@ -539,7 +546,14 @@ const AdminPanel = ({
                             </div>
                             <div>
                                 <label className="small color-muted mb-2 d-block">연락처</label>
-                                <input type="text" value={newMembershipPhone} onChange={(e) => setNewMembershipPhone(e.target.value)} placeholder="010-0000-0000" style={{ height: '40px' }} />
+                                <input
+                                    type="text"
+                                    value={newMembershipPhone}
+                                    onChange={(e) => setNewMembershipPhone(autoHyphen(e.target.value))}
+                                    maxLength={13}
+                                    placeholder="010-0000-0000"
+                                    style={{ height: '40px' }}
+                                />
                             </div>
                             <div>
                                 <label className="small color-muted mb-2 d-block">멤버십 고유 키 (미입력시 이름+x17 생성)</label>
