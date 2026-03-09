@@ -70,7 +70,8 @@ function App() {
   // Handle URL routing for direct access to order page
   useEffect(() => {
     const path = window.location.pathname;
-    if (path.includes('/membership') || path.includes('/order')) {
+    const search = window.location.search;
+    if (path.includes('/membership') || path.includes('/order') || search.includes('view=membership')) {
       setUserView('membership');
     }
   }, []);
