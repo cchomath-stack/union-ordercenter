@@ -978,16 +978,222 @@ const AdminPanel = ({
         );
     };
 
-    const renderStats = () => (
-        <div className="card">
-            <h3 className="flex items-center gap-2 mb-4" style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <TrendingUp size={24} color="var(--accent-teal)" /> 매출 통계 요약 (준비중)
-            </h3>
-            <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px dashed var(--border-glass)' }}>
-                <p className="color-muted">차트 시각화 라이브러리 연동 대기중...</p>
+    const renderStats = () => {
+        // Data Processing for Charts
+        const last14Days = [...Array(14)].map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (13 - i));
+            return d.toISOString().slice(0, 10);
+        });
+
+        const revenueByDay = last14Days.map(date => {
+            return orders
+                .filter(o => o.date && o.date.startsWith(date))
+                .reduce((sum, o) => sum + (Number(o.amount) || 0), 0);
+        });
+
+        const ordersByDay = last14Days.map(date => {
+            return orders.filter(o => o.date && o.date.startsWith(date)).length;
+        });
+
+        // Brand distribution
+        const brandCounts = {
+            UNR: orders.filter(o => o.type === 'UNR').length,
+            UNX: orders.filter(o => o.type === 'UNX').length,
+            YAK: orders.filter(o => o.type === 'YAK').length
+        };
+        const totalBrandOrders = Object.values(brandCounts).reduce((a, b) => a + b, 0) || 1;
+
+        const maxRevenue = Math.max(...revenueByDay, 100000);
+        const maxOrders = Math.max(...ordersByDay, 5);
+
+        // SVG Chart Helpers
+        const getPolylinePoints = (data, width, height, maxValue) => {
+            return data.map((val, i) => {
+                const x = (i / (data.length - 1)) * width;
+                const y = height - (val / maxValue) * height;
+                return `${x},${y}`;
+            }).join(' ');
+        };
+
+        return (
+            <div className="stats-dashboard" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {/* Main Revenue Chart */}
+                <div className="card luxury-card" style={{ padding: '2.5rem', background: 'var(--bg-panel)', border: '1px solid var(--border-glass)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+                        <div>
+                            <h3 className="flex items-center gap-2 m-0" style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+                                <TrendingUp size={24} color="var(--accent-teal)" /> 최근 14일 매출 추이
+                            </h3>
+                            <p className="small color-muted mt-1">일별 매출액 변동 현황입니다.</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <span className="small color-muted d-block">최고 매출액</span>
+                            <span className="fw-900 color-teal" style={{ fontSize: '1.2rem' }}>{Math.max(...revenueByDay).toLocaleString()}원</span>
+                        </div>
+                    </div>
+
+                    <div style={{ height: '300px', width: '100%', position: 'relative', marginTop: '1rem' }}>
+                        <svg width="100%" height="100%" viewBox="0 0 1000 300" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                            {/* Grid Lines */}
+                            {[0, 1, 2, 3].map(i => (
+                                <line key={i} x1="0" y1={i * 100} x2="1000" y2={i * 100} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                            ))}
+
+                            {/* Area Fill */}
+                            <polyline
+                                points={`0,300 ${getPolylinePoints(revenueByDay, 1000, 300, maxRevenue)} 1000,300`}
+                                fill="url(#revenueGradient)"
+                                opacity="0.2"
+                            />
+
+                            {/* Line */}
+                            <polyline
+                                points={getPolylinePoints(revenueByDay, 1000, 300, maxRevenue)}
+                                fill="none"
+                                stroke="var(--accent-teal)"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{ filter: 'drop-shadow(0 0 8px var(--accent-teal))' }}
+                            />
+
+                            {/* Data Points */}
+                            {revenueByDay.map((val, i) => {
+                                const x = (i / (revenueByDay.length - 1)) * 1000;
+                                const y = 300 - (val / maxRevenue) * 300;
+                                return (
+                                    <g key={i}>
+                                        <circle cx={x} cy={y} r="6" fill="var(--bg-deep)" stroke="var(--accent-teal)" strokeWidth="3" />
+                                        {val > 0 && (
+                                            <text x={x} y={y - 15} textAnchor="middle" fill="var(--text-secondary)" fontSize="10" fontWeight="bold">
+                                                {(val / 10000).toFixed(1)}만
+                                            </text>
+                                        )}
+                                    </g>
+                                );
+                            })}
+
+                            <defs>
+                                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="var(--accent-teal)" />
+                                    <stop offset="100%" stopColor="transparent" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        {/* X-Axis Labels */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem', padding: '0 5px' }}>
+                            {last14Days.map((date, i) => (
+                                <span key={i} style={{ fontSize: '0.7rem', color: 'var(--text-muted)', transform: 'rotate(-45deg)', transformOrigin: 'top left' }}>
+                                    {date.slice(5)}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem' }}>
+                    {/* Brand Mix Donut Chart */}
+                    <div className="card luxury-card" style={{ padding: '2.5rem' }}>
+                        <h3 className="mb-4" style={{ fontSize: '1.2rem', fontWeight: 800 }}>브랜드별 비율 (건수)</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                            <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+                                <svg width="180" height="180" viewBox="0 0 100 100">
+                                    {/* Donut Segments Calculations */}
+                                    {(() => {
+                                        let currentAngle = 0;
+                                        const radius = 40;
+                                        const center = 50;
+                                        const brands = [
+                                            { key: 'UNR', color: 'var(--accent-teal)', label: 'Union R' },
+                                            { key: 'UNX', color: 'var(--accent-purple)', label: 'Union X' },
+                                            { key: 'YAK', color: 'var(--accent-cyan)', label: 'Yak-sul' }
+                                        ];
+
+                                        return brands.map((brand, i) => {
+                                            const percent = (brandCounts[brand.key] / totalBrandOrders);
+                                            const angle = percent * 360;
+
+                                            if (percent === 0) return null;
+
+                                            const x1 = center + radius * Math.cos(Math.PI * currentAngle / 180);
+                                            const y1 = center + radius * Math.sin(Math.PI * currentAngle / 180);
+
+                                            currentAngle += angle;
+
+                                            const x2 = center + radius * Math.cos(Math.PI * currentAngle / 180);
+                                            const y2 = center + radius * Math.sin(Math.PI * currentAngle / 180);
+
+                                            const largeArcFlag = angle > 180 ? 1 : 0;
+
+                                            return (
+                                                <path
+                                                    key={i}
+                                                    d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`}
+                                                    fill="none"
+                                                    stroke={brand.color}
+                                                    strokeWidth="12"
+                                                    strokeLinecap="round"
+                                                />
+                                            );
+                                        });
+                                    })()}
+                                </svg>
+                                <div style={{ position: 'absolute', top: '0', left: '0', width: '180px', height: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>TOTAL</span>
+                                    <span style={{ fontSize: '1.8rem', fontWeight: 900 }}>{orders.length}</span>
+                                </div>
+                            </div>
+
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {[
+                                    { label: 'Union R', key: 'UNR', color: 'var(--accent-teal)' },
+                                    { label: 'Union X', key: 'UNX', color: 'var(--accent-purple)' },
+                                    { label: 'Yak-sul', key: 'YAK', color: 'var(--accent-cyan)' }
+                                ].map((b, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: b.color }}></div>
+                                            <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>{b.label}</span>
+                                        </div>
+                                        <span style={{ fontWeight: 800 }}>{brandCounts[b.key]}건</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Order Volume Bar Chart */}
+                    <div className="card luxury-card" style={{ padding: '2.5rem' }}>
+                        <h3 className="mb-4" style={{ fontSize: '1.2rem', fontWeight: 800 }}>일별 주문량 (건수)</h3>
+                        <div style={{ height: '180px', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                            {ordersByDay.map((count, i) => {
+                                const height = (count / maxOrders) * 100;
+                                return (
+                                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{
+                                            width: '100%',
+                                            height: `${height}%`,
+                                            maxHeight: '100%',
+                                            background: count > 0 ? 'var(--accent-teal)' : 'rgba(255,255,255,0.05)',
+                                            borderRadius: '6px 6px 0 0',
+                                            transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            minHeight: count > 0 ? '4px' : '2px',
+                                            position: 'relative'
+                                        }}>
+                                            {count > 0 && <span style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-teal)' }}>{count}</span>}
+                                        </div>
+                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', transform: 'rotate(-45deg)', marginTop: '5px' }}>{last14Days[i].slice(8)}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderLogin = () => (
         <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-deep)' }}>
