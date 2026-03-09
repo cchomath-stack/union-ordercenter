@@ -66,16 +66,17 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (!recipient || !phone || !address || !membershipKey) {
+        if (!recipient || !phone || !address || !membershipKey.trim()) {
             alert('모든 필수 정보를 입력해주세요.');
             return;
         }
 
         // Check if the entered membership key exists in the memberships array (case-insensitive)
-        const validMembership = memberships.find(m => m.membershipKey.toLowerCase() === membershipKey.toLowerCase());
+        const enteredKey = membershipKey.trim().toLowerCase();
+        const validMembership = memberships.find(m => m.membershipKey.toLowerCase().trim() === enteredKey);
 
         if (!validMembership) {
-            alert('유효하지 않은 멤버십 키입니다. 관리자에게 문의해주세요.');
+            alert(`유효하지 않은 멤버십 키입니다. 입력하신 [${membershipKey}]와 일치하는 회원을 찾을 수 없습니다. (대소문자 무관)`);
             return;
         }
 

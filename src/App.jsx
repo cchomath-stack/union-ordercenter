@@ -59,6 +59,23 @@ function App() {
     localStorage.setItem('csm_memberships', JSON.stringify(memberships));
   }, [memberships]);
 
+  // Sync state across multiple tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'csm_memberships' && e.newValue) {
+        setMemberships(JSON.parse(e.newValue));
+      }
+      if (e.key === 'csm17_orders' && e.newValue) {
+        setOrders(JSON.parse(e.newValue));
+      }
+      if (e.key === 'csm17_products' && e.newValue) {
+        setProducts(JSON.parse(e.newValue));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('csm_checklists', JSON.stringify(checklists));
   }, [checklists]);
