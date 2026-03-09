@@ -13,6 +13,7 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
     const [bizNumber, setBizNumber] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showKakaoModal, setShowKakaoModal] = useState(false);
+    const [generatedOrderNo, setGeneratedOrderNo] = useState('');
     const [totalPrice, setTotalPrice] = useState(0);
     const [copySuccess, setCopySuccess] = useState(false);
 
