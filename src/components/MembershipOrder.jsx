@@ -9,7 +9,7 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [membershipKey, setMembershipKey] = useState('');
-    const [receiptType, setReceiptType] = useState('없음'); // 없음, 현금영수증, 세금계산서
+    const [receiptType, setReceiptType] = useState('현금영수증'); // 현금영수증, 세금계산서
     const [bizNumber, setBizNumber] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showKakaoModal, setShowKakaoModal] = useState(false);
@@ -24,7 +24,7 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
         setPhone('');
         setAddress('');
         setMembershipKey('');
-        setReceiptType('없음');
+        setReceiptType('현금영수증');
         setBizNumber('');
     };
 
@@ -262,20 +262,22 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)' }}
                             disabled={isSubmitting}
                         >
-                            <option value="없음">신청안함</option>
                             <option value="현금영수증">현금영수증</option>
                             <option value="세금계산서">세금계산서</option>
                         </select>
-                        {receiptType !== '없음' && (
-                            <input
-                                type="text"
-                                placeholder={receiptType === '세금계산서' ? '사업자번호' : '휴대폰번호/사업자번호'}
-                                value={bizNumber}
-                                onChange={(e) => setBizNumber(e.target.value)}
-                                disabled={isSubmitting}
-                            />
-                        )}
+                        <input
+                            type="text"
+                            placeholder={receiptType === '세금계산서' ? '사업자번호 ' : '휴대폰번호/사업자번호'}
+                            value={bizNumber}
+                            onChange={(e) => setBizNumber(e.target.value)}
+                            disabled={isSubmitting}
+                        />
                     </div>
+                    {receiptType === '세금계산서' && (
+                        <p style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--accent-teal)', fontWeight: 600 }}>
+                            * 첫 거래 시 채널로 사업자등록증 전달 필수
+                        </p>
+                    )}
                 </div>
 
                 {
@@ -302,6 +304,12 @@ const MembershipOrder = ({ products, onAddOrder, memberships = [] }) => {
                         </div>
                     )
                 }
+
+                <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                    <p style={{ color: '#ff4d4d', fontSize: '0.9rem', fontWeight: 700 }}>
+                        ⚠️ 카드 결제는 지원되지 않으며, 계좌 이체만 가능합니다.
+                    </p>
+                </div>
 
                 <button
                     type="submit"
