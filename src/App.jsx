@@ -251,6 +251,42 @@ function App() {
             >
               멤버십 주문하기
             </button>
+            <a
+              href="https://pf.kakao.com/_pqQCn"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textDecoration: 'none',
+                color: 'var(--text-secondary)',
+                fontWeight: 700,
+                padding: '0.5rem 1rem',
+                borderBottom: '2px solid transparent',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-teal)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+            >
+              유니온채널
+            </a>
+            <a
+              href="https://pf.kakao.com/_kWwJn"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textDecoration: 'none',
+                color: 'var(--text-secondary)',
+                fontWeight: 700,
+                padding: '0.5rem 1rem',
+                borderBottom: '2px solid transparent',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-teal)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+            >
+              약술채널
+            </a>
           </nav>
 
           <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 2rem' }}>
