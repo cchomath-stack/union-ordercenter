@@ -9,8 +9,9 @@ import {
 const AdminPanel = ({
     orders = [], onAddOrder, onUpdateOrder, activeTab, products = [], onUpdateProducts,
     newProductName, setNewProductName, newProductPrice, setNewProductPrice,
-    newProductDiscount, setNewProductDiscount,
-    editingProductId, setEditingProductId, editPrice, setEditPrice,
+    newProductDiscount, setNewProductDiscount, newProductCategory, setNewProductCategory,
+    editingProductId, setEditingProductId, editPrice, setEditPrice, editDiscount, setEditDiscount,
+    editCategory, setEditCategory,
     customer, setCustomer, item, setItem, type, setType, copied, setCopied,
     selectedCustomer, setSelectedCustomer, checklists = {}, setChecklists,
     memos = [], setMemos, members = [], setMembers, memberships = [], setMemberships,
