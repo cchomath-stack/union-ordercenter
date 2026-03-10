@@ -160,6 +160,12 @@ function App() {
     setIsAdmin(false);
   };
 
+  const deleteOrder = (orderId) => {
+    const updatedOrders = orders.filter(o => o.id !== orderId);
+    setOrders(updatedOrders);
+    localStorage.setItem('csm17_orders', JSON.stringify(updatedOrders));
+  };
+
   const deleteMembership = (id) => {
     const updated = memberships.filter(m => m.id !== id);
     setMemberships(updated);
@@ -370,6 +376,7 @@ function App() {
               orders={orders}
               onAddOrder={addOrder}
               onUpdateOrder={updateOrder}
+              onDeleteOrder={deleteOrder}
               activeTab={activeTab}
               products={products}
               onUpdateProducts={updateProducts}

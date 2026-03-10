@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 const AdminPanel = ({
-    orders = [], onAddOrder, onUpdateOrder, activeTab, products = [], onUpdateProducts,
+    orders = [], onAddOrder, onUpdateOrder, onDeleteOrder, activeTab, products = [], onUpdateProducts,
     newProductName, setNewProductName, newProductPrice, setNewProductPrice,
     newProductDiscount, setNewProductDiscount, newProductCategory, setNewProductCategory,
     editingProductId, setEditingProductId, editPrice, setEditPrice, editDiscount, setEditDiscount,
@@ -44,6 +44,7 @@ const AdminPanel = ({
     const [searchTerm, setSearchTerm] = React.useState('');
     const [statusFilter, setStatusFilter] = React.useState('전체');
     const [dateFilter, setDateFilter] = React.useState('전체');
+    const [selectedOrder, setSelectedOrder] = React.useState(null);
 
     // Member Management States (Moved to top level to avoid Hook violations)
     // Membership Management States
@@ -268,7 +269,8 @@ const AdminPanel = ({
                                 <th style={{ width: 'auto' }}>주문상품</th>
                                 <th style={{ width: '130px', textAlign: 'right' }}>금액</th>
                                 <th style={{ width: '160px', textAlign: 'center' }}>증빙구분</th>
-                                <th style={{ width: '110px', textAlign: 'center' }}>발행</th>
+                                <th style={{ width: '100px', textAlign: 'center' }}>발행</th>
+                                <th style={{ width: '140px', textAlign: 'center' }}>관리</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -380,11 +382,89 @@ const AdminPanel = ({
                                             </button>
                                         ) : <span style={{ opacity: 0.3 }}>-</span>}
                                     </td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                                            <button
+                                                onClick={() => setSelectedOrder(order)}
+                                                className="btn-glass"
+                                                style={{ padding: '8px 12px', fontSize: '0.8rem' }}
+                                            >
+                                                상세
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('주문을 영구 삭제(취소)하시겠습니까?')) onDeleteOrder(order.id);
+                                                }}
+                                                className="btn-glass"
+                                                style={{ padding: '8px 12px', fontSize: '0.8rem', background: 'rgba(255, 77, 77, 0.1)', color: '#ff4d4d' }}
+                                            >
+                                                삭제
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+
+                {/* Order Detail Modal */}
+                {selectedOrder && (
+                    <div className="modal-overlay" onClick={() => setSelectedOrder(null)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000 }}>
+                        <div className="card shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ width: '560px', padding: 0, borderRadius: '32px', background: 'var(--bg-panel)', border: '1px solid var(--border-glass)' }}>
+                            <div className="p-4 border-bottom flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', padding: '1.5rem 2rem', borderBottom: '1px solid var(--border-glass)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <FileText size={24} color="var(--accent-teal)" />
+                                    <h3 className="m-0" style={{ fontSize: '1.3rem', fontWeight: 900 }}>주문 상세 내역</h3>
+                                </div>
+                                <button onClick={() => setSelectedOrder(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={24} /></button>
+                            </div>
+                            <div className="p-4" style={{ padding: '2rem' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '20px', marginBottom: '2rem' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>주문번호</span>
+                                        <span style={{ fontWeight: 800, color: 'var(--accent-teal)' }}>{selectedOrder.id}</span>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>주문일자</span>
+                                        <span>{selectedOrder.date}</span>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>주문상품</span>
+                                        <span style={{ fontWeight: 800 }}>{selectedOrder.item}</span>
+                                    </div>
+                                </div>
+
+                                <h4 style={{ fontSize: '1.1rem', fontWeight: 900, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <User size={20} color="var(--accent-teal)" /> 수령인 정보
+                                </h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)' }}>성함</span>
+                                        <span style={{ fontWeight: 700 }}>{selectedOrder.customer}</span>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)' }}>연락처</span>
+                                        <span style={{ fontWeight: 700 }}>{selectedOrder.phone}</span>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)' }}>배송 주소</span>
+                                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '12px', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                            {selectedOrder.address || "등록된 주소 정보가 없습니다."}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)' }}>증빙 서류</span>
+                                        <span>{selectedOrder.receipt_type} ({selectedOrder.biz_number || '-'})</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: '1rem' }}>
+                                <button className="btn btn-teal w-100 py-3" style={{ fontWeight: 800, borderRadius: '16px' }} onClick={() => setSelectedOrder(null)}>닫기</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div >
         );
     };
