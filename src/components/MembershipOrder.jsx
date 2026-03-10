@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash, Copy, Check, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Package, User, Phone, MapPin, CreditCard, ChevronRight, Hash, Copy, Check, Plus, Trash2, ShoppingCart, Loader2 } from 'lucide-react';
 import { sendAlimtalk } from '../services/alimtalkService';
 
 const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) => {
@@ -45,10 +45,10 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
     const addToCart = () => {
         if (!selectedProductId) {
             alert('상품을 먼저 선택해주세요.');
-            return;
+            return null;
         }
         const product = filteredProducts.find(p => p.id === Number(selectedProductId));
-        if (!product) return;
+        if (!product) return null;
 
         const discountedPrice = Math.floor(product.price * (1 - (product.discount || 0) / 100));
 
@@ -62,9 +62,11 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
             total: discountedPrice * quantity
         };
 
-        setCartItems([...cartItems, newItem]);
+        const updatedCart = [...cartItems, newItem];
+        setCartItems(updatedCart);
         setSelectedProductId('');
         setQuantity(1);
+        return updatedCart;
     };
 
     const removeFromCart = (id) => {
@@ -80,15 +82,40 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
+        console.log("Submit attempt started...");
 
-        if (cartItems.length === 0) {
-            alert('장바구니에 상품을 최소 하나 이상 담아주세요.');
+        // Smart Cart Logic: If cart is empty but a product is selected, auto-add it.
+        let finalCart = [...cartItems];
+        if (finalCart.length === 0) {
+            if (selectedProductId) {
+                console.log("Auto-adding selected product to cart...");
+                const product = filteredProducts.find(p => p.id === Number(selectedProductId));
+                if (product) {
+                    const discountedPrice = Math.floor(product.price * (1 - (product.discount || 0) / 100));
+                    finalCart = [{
+                        id: Date.now(),
+                        productId: product.id,
+                        name: product.name,
+                        originalPrice: product.price,
+                        price: discountedPrice,
+                        quantity: quantity,
+                        total: discountedPrice * quantity
+                    }];
+                    // Update state too for feedback
+                    setCartItems(finalCart);
+                    setSelectedProductId('');
+                }
+            }
+        }
+
+        if (finalCart.length === 0) {
+            alert('장바구니가 비어있습니다. 상품을 선택하고 담기 버튼을 누르거나 상품을 선택해주세요.');
             return;
         }
 
         if (!recipient || !phone || !address || (!isYakView && !membershipKey.trim())) {
-            alert('모든 필수 정보를 입력해주세요.');
+            alert('성함, 전화번호, 주소 등 모든 필수 정보를 입력해주세요.');
             return;
         }
 
@@ -106,7 +133,10 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
 
         setGeneratedOrderNo(orderNo);
         setIsSubmitting(true);
-        const orderItemsText = cartItems.map(item => `${item.name} (${item.quantity}부)`).join(', ');
+        const orderItemsText = finalCart.map(item => `${item.name} (${item.quantity}부)`).join(', ');
+        const totalAmount = finalCart.reduce((sum, item) => sum + item.total, 0);
+        const totalQty = finalCart.reduce((sum, i) => sum + i.quantity, 0);
+
         const newOrder = {
             id: orderNo,
             type: brandPrefix,
@@ -119,43 +149,44 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
             receipt_status: '발행전',
             biz_number: bizNumber,
             date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            amount: totalOrderPrice,
-            quantity: cartItems.reduce((sum, i) => sum + i.quantity, 0),
+            amount: totalAmount,
+            quantity: totalQty,
             address: address,
             membershipKey: membershipKey
         };
 
-        console.log("Submitting order:", newOrder);
+        console.log("Submitting finalized order:", newOrder);
 
-        // Simulating backend logic...
+        // API Call simulation
         setTimeout(async () => {
-            console.log("Adding order to state...");
-            onAddOrder(newOrder);
-
             try {
-                console.log("Sending Alimtalk...");
+                console.log("Executing onAddOrder...");
+                onAddOrder(newOrder);
+
+                console.log("Calling sendAlimtalk API...");
                 const result = await sendAlimtalk({
                     receiver: phone,
                     name: recipient,
                     productName: orderItemsText.length > 25 ? `${orderItemsText.slice(0, 22)}...` : orderItemsText,
-                    quantity: cartItems.reduce((sum, i) => sum + i.quantity, 0),
-                    totalPrice: totalOrderPrice,
+                    quantity: totalQty,
+                    totalPrice: totalAmount,
                     orderNumber: orderNo
                 });
 
                 if (result.success) {
-                    console.log("Alimtalk sent successfully");
+                    console.log("Order and Alimtalk success!");
                     setShowKakaoModal(true);
                 } else {
                     console.error("Alimtalk failed:", result.error);
                     alert(`주문은 접수되었으나, 알림톡 발송에 실패했습니다.\n사유: ${result.error}`);
+                    setShowKakaoModal(true); // Still show modal because order is technically in DB
                 }
             } catch (err) {
-                console.error("Alimtalk catch error:", err);
-                alert('주문은 접수되었으나, 네트워크 오류로 알림톡 발송에 실패했습니다.');
+                console.error("Critical submission error:", err);
+                alert('주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                setIsSubmitting(false);
             }
-            setIsSubmitting(false);
-            console.log("Order process complete.");
         }, 800);
     };
 
@@ -329,10 +360,12 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
                         </div>
                     </div>
 
-                    {totalOrderPrice > 0 && (
+                    {(totalOrderPrice > 0 || selectedProductId) && (
                         <div style={{ background: 'rgba(0, 242, 254, 0.05)', border: '1px solid rgba(0, 242, 254, 0.2)', padding: '1.5rem', borderRadius: '16px', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontWeight: 700 }}>총 결제 금액</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 950, color: 'var(--accent-teal)' }}>{totalOrderPrice.toLocaleString()}원</span>
+                            <span style={{ fontWeight: 700 }}>총 결제 예상 금액</span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: 950, color: 'var(--accent-teal)' }}>
+                                {(cartItems.length > 0 ? totalOrderPrice : (filteredProducts.find(p => p.id === Number(selectedProductId))?.price || 0) * quantity).toLocaleString()}원
+                            </span>
                         </div>
                     )}
 
@@ -343,11 +376,34 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
                     <button
                         type="submit"
                         className="btn btn-teal w-100"
-                        style={{ height: '64px', fontSize: '1.2rem', background: 'linear-gradient(135deg, #0369a1, #0284c7)', color: '#fff', border: 'none', borderRadius: '16px', fontWeight: 700, width: '100%' }}
-                        disabled={isSubmitting || cartItems.length === 0}
+                        style={{
+                            height: '64px',
+                            fontSize: '1.2rem',
+                            background: 'linear-gradient(135deg, #0369a1, #0284c7)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '16px',
+                            fontWeight: 700,
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                            opacity: isSubmitting ? 0.8 : 1
+                        }}
+                        disabled={isSubmitting}
                     >
-                        {isSubmitting ? '처리 중...' : '주문 완료하기'}
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="animate-spin" size={24} />
+                                처리 중...
+                            </>
+                        ) : '주문 완료하기'}
                     </button>
+                    <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        클릭 후 잠시만 기다려주세요 (약 1-2초 소요)
+                    </p>
                 </form>
             </div>
 
