@@ -934,7 +934,7 @@ const AdminPanel = ({
                                                                 value={editPrice}
                                                                 onChange={(e) => setEditPrice(e.target.value)}
                                                                 className="form-control"
-                                                                style={{ width: '120px', textAlign: 'right', display: 'inline-block' }}
+                                                                style={{ width: '160px', textAlign: 'right', display: 'inline-block' }}
                                                             />원
                                                         </>
                                                     ) : (
@@ -949,7 +949,7 @@ const AdminPanel = ({
                                                                 value={editDiscount}
                                                                 onChange={(e) => setEditDiscount(e.target.value)}
                                                                 className="form-control"
-                                                                style={{ width: '70px', textAlign: 'center', display: 'inline-block' }}
+                                                                style={{ width: '100px', textAlign: 'center', display: 'inline-block' }}
                                                             /> %
                                                         </div>
                                                     ) : (
@@ -1418,10 +1418,6 @@ const AdminPanel = ({
                                     activeTab === 'products' ? '상품 마스터 설정' :
                                         activeTab === 'memos' ? '기타 메모장' : '실적 통계 분석'}
                     </h2>
-                    <div className="flex items-center gap-2 color-muted" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-teal)', boxShadow: '0 0 10px var(--accent-teal)' }}></div>
-                        CSM17 Intelligence Admin v1.7 (Latest)
-                    </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <span className="small color-muted d-block mb-1">Last Sync: Today 02:45 AM</span>
