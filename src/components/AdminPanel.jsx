@@ -140,7 +140,8 @@ const AdminPanel = ({
         setTimeout(() => setCopied(null), 2000);
     };
 
-    const stats = [
+    const statsValue = [
+        { label: 'CSM17 Intelligence Admin', value: 'v1.7', icon: Database, color: 'var(--accent-teal)' },
         { label: '전체 주문', value: orders.length, icon: Database, color: 'var(--accent-teal)' },
         { label: '전체 매출', value: `${orders.reduce((acc, o) => acc + (Number(o.amount) || 0), 0).toLocaleString()}원`, icon: CreditCard, color: 'var(--accent-purple)' },
         { label: '배송 대기', value: orders.filter(o => o.delivery_status === '배송전').length, icon: Package, color: 'var(--accent-cyan)' }
@@ -1407,7 +1408,7 @@ const AdminPanel = ({
                     </h2>
                     <div className="flex items-center gap-2 color-muted" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-teal)', boxShadow: '0 0 10px var(--accent-teal)' }}></div>
-                        CSM17 Intelligence Admin v1.6
+                        CSM17 Intelligence Admin v1.7 (Latest)
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -1418,7 +1419,7 @@ const AdminPanel = ({
 
             {/* Stats Summary Area */}
             <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
-                {stats.map((s, i) => (
+                {(statsValue || []).map((s, i) => (
                     <div key={i} className="card flex items-center justify-between luxury-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2.5rem 3rem', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
                         <div>
                             <span className="small color-muted mb-2 d-block" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</span>
