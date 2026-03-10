@@ -53,8 +53,6 @@ const AdminPanel = ({
     const [membershipType, setMembershipType] = React.useState('X'); // X, R, Y (약술)
     const [editingMembership, setEditingMembership] = React.useState(null);
 
-    // Product Management States
-    const [newProductCategory, setNewProductCategory] = React.useState('union'); // union, yak
 
     // Auto-generate membership key
     React.useEffect(() => {
@@ -766,7 +764,7 @@ const AdminPanel = ({
 
     const renderProducts = () => {
         const handleSaveProduct = (id) => {
-            const updated = products.map(p => p.id === id ? { ...p, price: Number(editPrice), discount: Number(editDiscount) } : p);
+            const updated = products.map(p => p.id === id ? { ...p, price: Number(editPrice), discount: Number(editDiscount), category: editCategory } : p);
             onUpdateProducts(updated);
             setEditingProductId(null);
         };
@@ -805,6 +803,7 @@ const AdminPanel = ({
                             <table className="admin-table luxury-table">
                                 <thead>
                                     <tr>
+                                        <th style={{ width: '100px', textAlign: 'center' }}>구분</th>
                                         <th>상품명</th>
                                         <th style={{ textAlign: 'right' }}>보급가</th>
                                         <th style={{ textAlign: 'center' }}>할인율</th>
@@ -817,6 +816,34 @@ const AdminPanel = ({
                                         const discountedPrice = p.price - (p.price * (p.discount || 0) / 100);
                                         return (
                                             <tr key={p.id}>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    {editingProductId === p.id ? (
+                                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditCategory('union')}
+                                                                style={{ padding: '4px 8px', borderRadius: '4px', background: editCategory === 'union' ? 'var(--accent-purple)' : 'transparent', border: '1px solid var(--accent-purple)', fontSize: '0.7rem' }}
+                                                            >U</button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditCategory('yak')}
+                                                                style={{ padding: '4px 8px', borderRadius: '4px', background: editCategory === 'yak' ? 'var(--accent-cyan)' : 'transparent', border: '1px solid var(--accent-cyan)', fontSize: '0.7rem' }}
+                                                            >Y</button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className={`badge ${p.category === 'yak' ? 'badge-cyan' : 'badge-purple'}`} style={{
+                                                            fontSize: '0.75rem',
+                                                            padding: '4px 10px',
+                                                            borderRadius: '6px',
+                                                            background: p.category === 'yak' ? 'rgba(79, 172, 254, 0.15)' : 'rgba(124, 77, 255, 0.15)',
+                                                            color: p.category === 'yak' ? 'var(--accent-cyan)' : 'var(--accent-purple)',
+                                                            border: `1px solid ${p.category === 'yak' ? 'rgba(79, 172, 254, 0.3)' : 'rgba(124, 77, 255, 0.3)'}`,
+                                                            fontWeight: 800
+                                                        }}>
+                                                            {p.category === 'yak' ? '약술형' : '유니온'}
+                                                        </span>
+                                                    )}
+                                                </td>
                                                 <td className="fw-bold">{p.name}</td>
                                                 <td style={{ textAlign: 'right' }}>
                                                     {editingProductId === p.id ? (
@@ -844,7 +871,12 @@ const AdminPanel = ({
                                                             <button onClick={() => handleSaveProduct(p.id)} className="btn btn-teal py-2 px-4" style={{ height: 'auto' }}>저장</button>
                                                         ) : (
                                                             <>
-                                                                <button onClick={() => { setEditingProductId(p.id); setEditPrice(p.price); setEditDiscount(p.discount || 0); }} className="btn-glass py-2 px-4" style={{ height: 'auto', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>수정</button>
+                                                                <button onClick={() => {
+                                                                    setEditingProductId(p.id);
+                                                                    setEditPrice(p.price);
+                                                                    setEditDiscount(p.discount || 0);
+                                                                    setEditCategory(p.category || 'union');
+                                                                }} className="btn-glass py-2 px-4" style={{ height: 'auto', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>수정</button>
                                                                 <button onClick={() => handleDeleteProduct(p.id)} className="btn-glass py-2 px-4" style={{ height: 'auto', background: 'rgba(255, 77, 77, 0.1)', color: '#ff4d4d', borderRadius: '8px' }}><Trash2 size={16} /></button>
                                                             </>
                                                         )}
@@ -871,6 +903,41 @@ const AdminPanel = ({
                                     onChange={(e) => setNewProductName(e.target.value)}
                                     placeholder="예: 유니온 R 시즌2"
                                 />
+                            </div>
+                            <div className="mb-4">
+                                <label className="small color-muted mb-2 d-block">카테고리</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewProductCategory('union')}
+                                        style={{
+                                            padding: '0.8rem',
+                                            borderRadius: '10px',
+                                            background: newProductCategory === 'union' ? 'rgba(124, 77, 255, 0.1)' : 'transparent',
+                                            border: newProductCategory === 'union' ? '2px solid var(--accent-purple)' : '1px solid var(--border-glass)',
+                                            color: newProductCategory === 'union' ? 'var(--accent-purple)' : 'var(--text-muted)',
+                                            fontWeight: 800,
+                                            transition: '0.2s'
+                                        }}
+                                    >
+                                        유니온
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewProductCategory('yak')}
+                                        style={{
+                                            padding: '0.8rem',
+                                            borderRadius: '10px',
+                                            background: newProductCategory === 'yak' ? 'rgba(79, 172, 254, 0.1)' : 'transparent',
+                                            border: newProductCategory === 'yak' ? '2px solid var(--accent-cyan)' : '1px solid var(--border-glass)',
+                                            color: newProductCategory === 'yak' ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                                            fontWeight: 800,
+                                            transition: '0.2s'
+                                        }}
+                                    >
+                                        약술형
+                                    </button>
+                                </div>
                             </div>
                             <div className="mb-4">
                                 <label className="small color-muted mb-2 d-block">기본 보급가 (원)</label>

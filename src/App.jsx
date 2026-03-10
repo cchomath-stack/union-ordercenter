@@ -15,9 +15,9 @@ function App() {
     const saved = localStorage.getItem('csm17_products');
     if (saved) return JSON.parse(saved);
     return [
-      { id: 1, name: '유니온 R (시즌1)', price: 150000, discount: 0 },
-      { id: 2, name: '유니온 X (시즌1)', price: 180000, discount: 10 },
-      { id: 3, name: '약술형 논술 기본서', price: 32000, discount: 5 }
+      { id: 1, name: '유니온 R (시즌1)', price: 150000, discount: 0, category: 'union' },
+      { id: 2, name: '유니온 X (시즌1)', price: 180000, discount: 10, category: 'union' },
+      { id: 3, name: '약술형 논술 기본서', price: 32000, discount: 5, category: 'yak' }
     ];
   });
 
@@ -25,9 +25,11 @@ function App() {
   const [newProductName, setNewProductName] = useState('');
   const [newProductPrice, setNewProductPrice] = useState('');
   const [newProductDiscount, setNewProductDiscount] = useState('0');
+  const [newProductCategory, setNewProductCategory] = useState('union');
   const [editingProductId, setEditingProductId] = useState(null);
   const [editPrice, setEditPrice] = useState('');
   const [editDiscount, setEditDiscount] = useState('');
+  const [editCategory, setEditCategory] = useState('union');
   const [customer, setCustomer] = useState('');
   const [item, setItem] = useState('');
   const [type, setType] = useState('UNR');
@@ -377,12 +379,16 @@ function App() {
               setNewProductPrice={setNewProductPrice}
               newProductDiscount={newProductDiscount}
               setNewProductDiscount={setNewProductDiscount}
+              newProductCategory={newProductCategory}
+              setNewProductCategory={setNewProductCategory}
               editingProductId={editingProductId}
               setEditingProductId={setEditingProductId}
               editPrice={editPrice}
               setEditPrice={setEditPrice}
               editDiscount={editDiscount}
               setEditDiscount={setEditDiscount}
+              editCategory={editCategory}
+              setEditCategory={setEditCategory}
               customer={customer}
               setCustomer={setCustomer}
               item={item}
