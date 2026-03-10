@@ -106,9 +106,7 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
 
         setGeneratedOrderNo(orderNo);
         setIsSubmitting(true);
-
         const orderItemsText = cartItems.map(item => `${item.name} (${item.quantity}부)`).join(', ');
-
         const newOrder = {
             id: orderNo,
             type: brandPrefix,
@@ -127,11 +125,15 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
             membershipKey: membershipKey
         };
 
+        console.log("Submitting order:", newOrder);
+
         // Simulating backend logic...
         setTimeout(async () => {
+            console.log("Adding order to state...");
             onAddOrder(newOrder);
 
             try {
+                console.log("Sending Alimtalk...");
                 const result = await sendAlimtalk({
                     receiver: phone,
                     name: recipient,
@@ -142,14 +144,18 @@ const MembershipOrder = ({ viewType, products, onAddOrder, memberships = [] }) =
                 });
 
                 if (result.success) {
+                    console.log("Alimtalk sent successfully");
                     setShowKakaoModal(true);
                 } else {
+                    console.error("Alimtalk failed:", result.error);
                     alert(`주문은 접수되었으나, 알림톡 발송에 실패했습니다.\n사유: ${result.error}`);
                 }
             } catch (err) {
+                console.error("Alimtalk catch error:", err);
                 alert('주문은 접수되었으나, 네트워크 오류로 알림톡 발송에 실패했습니다.');
             }
             setIsSubmitting(false);
+            console.log("Order process complete.");
         }, 800);
     };
 

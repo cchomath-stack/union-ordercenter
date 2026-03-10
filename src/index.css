@@ -138,6 +138,34 @@ button {
   filter: brightness(0.9);
 }
 
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 14px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-teal {
+  background: linear-gradient(135deg, var(--accent-teal), #0284c7);
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(3, 105, 161, 0.2);
+}
+
+.btn-teal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(3, 105, 161, 0.3);
+  filter: brightness(1.1);
+}
+
+.w-100 {
+  width: 100% !important;
+}
+
 .badge {
   display: inline-flex;
   padding: 6px 16px;
