@@ -33,15 +33,23 @@ async function generateSignature(apiSecret, date, salt) {
 
 /**
  * 알림톡 발송 함수
- * @param {Object} params - { receiver, name, productName, quantity, totalPrice, orderNumber }
+ * @param {Object} params - { receiver, name, productName, quantity, totalPrice, orderNumber, brand }
  */
-export const sendAlimtalk = async ({ receiver, name, productName, quantity, totalPrice, orderNumber }) => {
+export const sendAlimtalk = async ({ receiver, name, productName, quantity, totalPrice, orderNumber, brand }) => {
     // 환경 변수 확인
     const apiKey = import.meta.env.VITE_SOLAPI_API_KEY;
     const apiSecret = import.meta.env.VITE_SOLAPI_API_SECRET;
-    const pfid = import.meta.env.VITE_SOLAPI_PFID;
-    const templateId = import.meta.env.VITE_SOLAPI_TEMPLATE_ID;
     const senderNumber = import.meta.env.VITE_SOLAPI_SENDER_NUMBER;
+
+    // 브랜드별 채널 정보 설정 (기본값: 유니온)
+    let pfid = import.meta.env.VITE_SOLAPI_PFID;
+    let templateId = import.meta.env.VITE_SOLAPI_TEMPLATE_ID;
+
+    // 약술형(YAK)인 경우 전용 채널 정보 사용
+    if (brand === 'YAK') {
+        pfid = import.meta.env.VITE_SOLAPI_YAK_PFID || pfid;
+        templateId = import.meta.env.VITE_SOLAPI_YAK_TEMPLATE_ID || templateId;
+    }
 
     if (!apiKey || !apiSecret || !pfid || !templateId) {
         console.error('솔라피 연동 정보(API Key, Secret, PFID, TemplateID)가 설정되지 않았습니다.');

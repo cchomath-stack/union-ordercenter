@@ -177,7 +177,8 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                 productName: orderItemsText.length > 25 ? `${orderItemsText.slice(0, 22)}...` : orderItemsText,
                 quantity: totalQty,
                 totalPrice: totalOrderPrice,
-                orderNumber: orderId
+                orderNumber: orderId,
+                brand: isYakView ? 'YAK' : 'UNM'
             }).catch(e => {
                 addLog("Solapi error caught: " + e.message);
                 return { success: false, error: e.message };
