@@ -141,7 +141,6 @@ const AdminPanel = ({
     };
 
     const statsValue = [
-        { label: 'CSM17 Intelligence Admin', value: 'v1.7', icon: Database, color: 'var(--accent-teal)' },
         { label: '전체 주문', value: orders.length, icon: Database, color: 'var(--accent-teal)' },
         { label: '전체 매출', value: `${orders.reduce((acc, o) => acc + (Number(o.amount) || 0), 0).toLocaleString()}원`, icon: CreditCard, color: 'var(--accent-purple)' },
         { label: '배송 대기', value: orders.filter(o => o.delivery_status === '배송전').length, icon: Package, color: 'var(--accent-cyan)' }
@@ -887,9 +886,9 @@ const AdminPanel = ({
                                     <tr>
                                         <th style={{ width: '100px', textAlign: 'center' }}>구분</th>
                                         <th>상품명</th>
-                                        <th style={{ textAlign: 'right' }}>보급가</th>
-                                        <th style={{ textAlign: 'center' }}>할인율</th>
-                                        <th style={{ textAlign: 'right' }}>판매가</th>
+                                        <th style={{ textAlign: 'right', width: '150px' }}>공급가</th>
+                                        <th style={{ textAlign: 'center', width: '120px' }}>할인율</th>
+                                        <th style={{ textAlign: 'right', width: '150px' }}>판매가</th>
                                         <th style={{ textAlign: 'center' }}>관리</th>
                                     </tr>
                                 </thead>
@@ -929,7 +928,15 @@ const AdminPanel = ({
                                                 <td className="fw-bold">{p.name}</td>
                                                 <td style={{ textAlign: 'right' }}>
                                                     {editingProductId === p.id ? (
-                                                        <input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} style={{ width: '100px', height: '36px', marginTop: 0, textAlign: 'right' }} />
+                                                        <>
+                                                            <input
+                                                                type="number"
+                                                                value={editPrice}
+                                                                onChange={(e) => setEditPrice(e.target.value)}
+                                                                className="form-control"
+                                                                style={{ width: '120px', textAlign: 'right', display: 'inline-block' }}
+                                                            />원
+                                                        </>
                                                     ) : (
                                                         <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textDecoration: p.discount > 0 ? 'line-through' : 'none' }}>{p.price.toLocaleString()}원</span>
                                                     )}
@@ -937,8 +944,13 @@ const AdminPanel = ({
                                                 <td style={{ textAlign: 'center' }}>
                                                     {editingProductId === p.id ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                                                            <input type="number" value={editDiscount} onChange={(e) => setEditDiscount(e.target.value)} style={{ width: '60px', height: '36px', marginTop: 0, textAlign: 'center' }} />
-                                                            <span style={{ fontSize: '0.8rem' }}>%</span>
+                                                            <input
+                                                                type="number"
+                                                                value={editDiscount}
+                                                                onChange={(e) => setEditDiscount(e.target.value)}
+                                                                className="form-control"
+                                                                style={{ width: '70px', textAlign: 'center', display: 'inline-block' }}
+                                                            /> %
                                                         </div>
                                                     ) : (
                                                         <span className={p.discount > 0 ? 'badge badge-teal' : ''} style={{ fontSize: '0.8rem' }}>{p.discount || 0}%</span>
@@ -1022,7 +1034,7 @@ const AdminPanel = ({
                                 </div>
                             </div>
                             <div className="mb-4">
-                                <label className="small color-muted mb-2 d-block">기본 보급가 (원)</label>
+                                <label className="small color-muted mb-2 d-block">기본 공급가 (원)</label>
                                 <input
                                     type="number"
                                     value={newProductPrice}
