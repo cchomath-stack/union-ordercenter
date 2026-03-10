@@ -1140,7 +1140,7 @@ const AdminPanel = ({
                                     border: '1px solid var(--border-glass)',
                                     borderRadius: '16px',
                                     padding: '1.5rem',
-                                    color: 'white',
+                                    color: '#1a1a1a',
                                     fontSize: '1rem',
                                     fontFamily: 'inherit',
                                     resize: 'none',
