@@ -250,7 +250,8 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                                     type="number"
                                     min="1"
                                     value={quantity}
-                                    onChange={(e) => setQuantity(Number(e.target.value))}
+                                    onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onBlur={() => { if (quantity === '' || quantity < 1) setQuantity(1); }}
                                     style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', padding: 0, minWidth: 0 }}
                                 />
                             </div>
