@@ -59,7 +59,7 @@ function App() {
     try {
       const keys = ['orders', 'products', 'memberships', 'checklists', 'memos', 'members'];
       for (const k of keys) {
-        const res = await fetch(`/api/kv?key=${k}`);
+        const res = await fetch(`/api/kv?key=${k}&t=${Date.now()}`, { cache: 'no-store' });
         if(res.ok) {
            const json = await res.json();
            if(json.data) {
