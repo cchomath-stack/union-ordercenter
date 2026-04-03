@@ -3,7 +3,6 @@ import UserSearch from './components/UserSearch';
 import AdminPanel from './components/AdminPanel';
 import MembershipOrder from './components/MembershipOrder';
 import { Settings, ShieldCheck, List, Users, BarChart3, LogOut, Search, Package, Plus, Sun, Moon, StickyNote, Key } from 'lucide-react';
-import { db, doc, setDoc, onSnapshot } from './firebaseClient';
 
 // Version: 2026.03.09.v2 - Mobile Overhaul & Multi-Cart System
 function App() {
@@ -55,62 +54,70 @@ function App() {
     ];
   });
 
-  // Firebase Cloud Sync Setup
-  useEffect(() => {
-    if (!db) {
-      // Local fallbacks
-      const handleStorageChange = (e) => {
-        if (e.key === 'csm_memberships' && e.newValue) setMemberships(JSON.parse(e.newValue));
-        if (e.key === 'csm17_orders' && e.newValue) setOrders(JSON.parse(e.newValue));
-        if (e.key === 'csm17_products' && e.newValue) setProducts(JSON.parse(e.newValue));
-      };
-      window.addEventListener('storage', handleStorageChange);
-      return () => window.removeEventListener('storage', handleStorageChange);
+  // Vercel KV Sync on load & window focus
+  const syncWithVercelKV = async () => {
+    try {
+      const keys = ['orders', 'products', 'memberships', 'checklists', 'memos', 'members'];
+      for (const k of keys) {
+        const res = await fetch(`/api/kv?key=${k}`);
+        if(res.ok) {
+           const json = await res.json();
+           if(json.data) {
+             if(k==='orders') { setOrders(json.data); localStorage.setItem('csm17_orders', JSON.stringify(json.data)); }
+             if(k==='products') { setProducts(json.data); localStorage.setItem('csm17_products', JSON.stringify(json.data)); }
+             if(k==='memberships') { setMemberships(json.data); localStorage.setItem('csm_memberships', JSON.stringify(json.data)); }
+             if(k==='checklists') { setChecklists(json.data); localStorage.setItem('csm_checklists', JSON.stringify(json.data)); }
+             if(k==='memos') { setMemos(json.data); localStorage.setItem('csm_memos', JSON.stringify(json.data)); }
+             if(k==='members') { setMembers(json.data); localStorage.setItem('csm_members', JSON.stringify(json.data)); }
+           }
+        }
+      }
+    } catch(e) {
+      console.warn("KV sync failed or unsupported environment, using localStorage.");
     }
+  };
 
-    const unsubOrders = onSnapshot(doc(db, 'csm17', 'orders'), (snap) => {
-      if (snap.exists()) { setOrders(snap.data().data); localStorage.setItem('csm17_orders', JSON.stringify(snap.data().data)); }
-    });
-    const unsubProducts = onSnapshot(doc(db, 'csm17', 'products'), (snap) => {
-      if (snap.exists()) { setProducts(snap.data().data); localStorage.setItem('csm17_products', JSON.stringify(snap.data().data)); }
-    });
-    const unsubMemberships = onSnapshot(doc(db, 'csm17', 'memberships'), (snap) => {
-      if (snap.exists()) { setMemberships(snap.data().data); localStorage.setItem('csm_memberships', JSON.stringify(snap.data().data)); }
-    });
-    const unsubChecklists = onSnapshot(doc(db, 'csm17', 'checklists'), (snap) => {
-      if (snap.exists()) { setChecklists(snap.data().data); localStorage.setItem('csm_checklists', JSON.stringify(snap.data().data)); }
-    });
-    const unsubMemos = onSnapshot(doc(db, 'csm17', 'memos'), (snap) => {
-      if (snap.exists()) { setMemos(snap.data().data); localStorage.setItem('csm_memos', JSON.stringify(snap.data().data)); }
-    });
-    const unsubMembers = onSnapshot(doc(db, 'csm17', 'members'), (snap) => {
-      if (snap.exists()) { setMembers(snap.data().data); localStorage.setItem('csm_members', JSON.stringify(snap.data().data)); }
-    });
-
+  useEffect(() => {
+    syncWithVercelKV();
+    const handleStorageChange = (e) => {
+      if (e.key === 'csm_memberships' && e.newValue) setMemberships(JSON.parse(e.newValue));
+      if (e.key === 'csm17_orders' && e.newValue) setOrders(JSON.parse(e.newValue));
+      if (e.key === 'csm17_products' && e.newValue) setProducts(JSON.parse(e.newValue));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', syncWithVercelKV);
     return () => {
-      unsubOrders(); unsubProducts(); unsubMemberships();
-      unsubChecklists(); unsubMemos(); unsubMembers();
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', syncWithVercelKV);
     };
   }, []);
 
+  const saveToVercelKV = (key, data) => {
+    fetch(`/api/kv?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data })
+    }).catch(e => console.warn('KV save failed'));
+  };
+
   useEffect(() => {
     localStorage.setItem('csm_members', JSON.stringify(members));
-    if (db && members.length > 0) setDoc(doc(db, 'csm17', 'members'), { data: members });
+    if(members.length > 0) saveToVercelKV('members', members);
   }, [members]);
 
   useEffect(() => {
     localStorage.setItem('csm_memberships', JSON.stringify(memberships));
-    if (db && memberships.length > 0) setDoc(doc(db, 'csm17', 'memberships'), { data: memberships });
+    if(memberships.length > 0) saveToVercelKV('memberships', memberships);
   }, [memberships]);
 
   useEffect(() => {
     localStorage.setItem('csm_checklists', JSON.stringify(checklists));
-    if (db && Object.keys(checklists).length > 0) setDoc(doc(db, 'csm17', 'checklists'), { data: checklists });
+    if(Object.keys(checklists).length > 0) saveToVercelKV('checklists', checklists);
   }, [checklists]);
 
   useEffect(() => {
     localStorage.setItem('csm_memos', JSON.stringify(memos));
-    if (db && memos.length > 0) setDoc(doc(db, 'csm17', 'memos'), { data: memos });
+    if(memos.length > 0) saveToVercelKV('memos', memos);
   }, [memos]);
 
   // Handle URL routing for direct access to order page
@@ -173,14 +180,14 @@ function App() {
     const updatedOrders = [newOrder, ...orders];
     setOrders(updatedOrders);
     localStorage.setItem('csm17_orders', JSON.stringify(updatedOrders));
-    if (db) setDoc(doc(db, 'csm17', 'orders'), { data: updatedOrders });
+    saveToVercelKV('orders', updatedOrders);
   };
 
   const updateOrder = (orderId, updates) => {
     const updatedOrders = orders.map(o => o.id === orderId ? { ...o, ...updates } : o);
     setOrders(updatedOrders);
     localStorage.setItem('csm17_orders', JSON.stringify(updatedOrders));
-    if (db) setDoc(doc(db, 'csm17', 'orders'), { data: updatedOrders });
+    saveToVercelKV('orders', updatedOrders);
   };
 
   const handleAdminLogout = () => {
@@ -192,7 +199,7 @@ function App() {
     const updatedOrders = orders.filter(o => o.id !== orderId);
     setOrders(updatedOrders);
     localStorage.setItem('csm17_orders', JSON.stringify(updatedOrders));
-    if (db) setDoc(doc(db, 'csm17', 'orders'), { data: updatedOrders });
+    saveToVercelKV('orders', updatedOrders);
   };
 
   const deleteMembership = (id) => {
@@ -210,7 +217,7 @@ function App() {
     const unique = Array.from(new Map(newProducts.map(p => [p.name, p])).values());
     setProducts(unique);
     localStorage.setItem('csm17_products', JSON.stringify(unique));
-    if (db) setDoc(doc(db, 'csm17', 'products'), { data: unique });
+    saveToVercelKV('products', unique);
   };
 
   return (
