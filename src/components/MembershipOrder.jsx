@@ -232,9 +232,14 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                                 style={{ paddingLeft: '3rem', height: '54px' }}
                             >
                                 <option value="">상품을 선택하세요</option>
-                                {filteredProducts.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name} ({p.price.toLocaleString()}원)</option>
-                                ))}
+                                {filteredProducts.map(p => {
+                                    const dPrice = Math.floor(p.price * (1 - (p.discount || 0) / 100));
+                                    return (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name} {p.discount > 0 ? `(정가 ${p.price.toLocaleString()}원 → ${p.discount}% 할인 적용: ${dPrice.toLocaleString()}원)` : `(${p.price.toLocaleString()}원)`}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <Package size={18} color="#94a3b8" style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)' }} />
                         </div>
@@ -292,7 +297,19 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                                 }}>
                                     <div style={{ textAlign: 'left' }}>
                                         <p style={{ fontWeight: 800, margin: 0, fontSize: '0.9rem' }}>{item.name}</p>
-                                        <small>{item.price.toLocaleString()}원 × {item.quantity}부</small>
+                                        <small>
+                                            {item.originalPrice > item.price && (
+                                                <span style={{ textDecoration: 'line-through', color: '#94a3b8', marginRight: '6px' }}>
+                                                    {item.originalPrice.toLocaleString()}원
+                                                </span>
+                                            )}
+                                            {item.originalPrice > item.price && (
+                                                <span style={{ color: '#0ea5e9', fontWeight: 600, marginRight: '4px' }}>
+                                                    {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% ↓
+                                                </span>
+                                            )}
+                                            {item.price.toLocaleString()}원 × {item.quantity}부
+                                        </small>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                         <span style={{ fontWeight: 800 }}>{item.total.toLocaleString()}원</span>
@@ -307,7 +324,7 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                 )}
 
                 {/* Basic Fields */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem', marginTop: '1.5rem' }}>
+                <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem', marginTop: '1.5rem' }}>
                     <div className="input-group">
                         <label className="form-label" style={{ fontWeight: 700 }}>받는 사람</label>
                         <div style={{ position: 'relative' }}>
