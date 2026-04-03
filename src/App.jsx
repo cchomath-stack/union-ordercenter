@@ -100,25 +100,41 @@ function App() {
     }).catch(e => console.warn('KV save failed'));
   };
 
-  useEffect(() => {
-    localStorage.setItem('csm_members', JSON.stringify(members));
-    if(members.length > 0) saveToVercelKV('members', members);
-  }, [members]);
+  const handleSetMembers = (val) => {
+    setMembers(prev => {
+      const data = typeof val === 'function' ? val(prev) : val;
+      localStorage.setItem('csm_members', JSON.stringify(data));
+      saveToVercelKV('members', data);
+      return data;
+    });
+  };
 
-  useEffect(() => {
-    localStorage.setItem('csm_memberships', JSON.stringify(memberships));
-    if(memberships.length > 0) saveToVercelKV('memberships', memberships);
-  }, [memberships]);
+  const handleSetMemberships = (val) => {
+    setMemberships(prev => {
+      const data = typeof val === 'function' ? val(prev) : val;
+      localStorage.setItem('csm_memberships', JSON.stringify(data));
+      saveToVercelKV('memberships', data);
+      return data;
+    });
+  };
 
-  useEffect(() => {
-    localStorage.setItem('csm_checklists', JSON.stringify(checklists));
-    if(Object.keys(checklists).length > 0) saveToVercelKV('checklists', checklists);
-  }, [checklists]);
+  const handleSetChecklists = (val) => {
+    setChecklists(prev => {
+      const data = typeof val === 'function' ? val(prev) : val;
+      localStorage.setItem('csm_checklists', JSON.stringify(data));
+      saveToVercelKV('checklists', data);
+      return data;
+    });
+  };
 
-  useEffect(() => {
-    localStorage.setItem('csm_memos', JSON.stringify(memos));
-    if(memos.length > 0) saveToVercelKV('memos', memos);
-  }, [memos]);
+  const handleSetMemos = (val) => {
+    setMemos(prev => {
+      const data = typeof val === 'function' ? val(prev) : val;
+      localStorage.setItem('csm_memos', JSON.stringify(data));
+      saveToVercelKV('memos', data);
+      return data;
+    });
+  };
 
   // Handle URL routing for direct access to order page
   useEffect(() => {
@@ -203,13 +219,11 @@ function App() {
   };
 
   const deleteMembership = (id) => {
-    const updated = memberships.filter(m => m.id !== id);
-    setMemberships(updated);
+    handleSetMemberships(prev => prev.filter(m => m.id !== id));
   };
 
   const updateMembership = (id, updates) => {
-    const updated = memberships.map(m => m.id === id ? { ...m, ...updates } : m);
-    setMemberships(updated);
+    handleSetMemberships(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
   };
 
   const updateProducts = (newProducts) => {
@@ -444,13 +458,13 @@ function App() {
               selectedCustomer={selectedCustomer}
               setSelectedCustomer={setSelectedCustomer}
               checklists={checklists}
-              setChecklists={setChecklists}
+              setChecklists={handleSetChecklists}
               memos={memos}
-              setMemos={setMemos}
+              setMemos={handleSetMemos}
               members={members}
-              setMembers={setMembers}
+              setMembers={handleSetMembers}
               memberships={memberships}
-              setMemberships={setMemberships}
+              setMemberships={handleSetMemberships}
               onDeleteMembership={deleteMembership}
               onUpdateMembership={updateMembership}
               isAuthenticated={isAdminAuthenticated}
