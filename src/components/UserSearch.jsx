@@ -27,9 +27,9 @@ const UserSearch = ({ orders }) => {
                 }}>
                     <Search size={36} color="var(--accent-teal)" />
                 </div>
-                <h1 style={{ marginBottom: '1.25rem', fontSize: 'clamp(2rem, 8vw, 3.2rem)', letterSpacing: '-0.05em' }}>주문번호 조회</h1>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '3.5rem', fontSize: '1.15rem', lineHeight: 1.8 }}>
-                    발급받으신 주문번호 (예: UNR-2026...)를 입력하여<br />실시간 주문 상태를 확인하실 수 있습니다.
+                <h1 style={{ marginBottom: '1.25rem', fontSize: 'clamp(1.75rem, 6vw, 2.5rem)', letterSpacing: '-0.05em', wordBreak: 'keep-all' }}>주문번호 조회</h1>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '3.5rem', fontSize: 'clamp(0.95rem, 4.5vw, 1.1rem)', lineHeight: 1.6, wordBreak: 'keep-all', padding: '0 0.5rem' }}>
+                    발급받으신 주문번호(예: UNR-2026...)를 입력하여<br />실시간 주문 상태를 빠르게 확인하세요.
                 </p>
 
                 <div className="search-box-container" style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
@@ -38,7 +38,7 @@ const UserSearch = ({ orders }) => {
                         placeholder="주문번호를 입력하세요"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ margin: 0, paddingLeft: '1.5rem', height: '60px', fontSize: '1.1rem', flex: '1 1 300px' }}
+                        style={{ margin: 0, paddingLeft: '1.5rem', height: '60px', fontSize: '1.1rem', flex: '1 1 200px', borderRadius: '12px', border: '1px solid #e2e8f0', minWidth: 0 }}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                     />
                     <button onClick={handleSearch} className="btn-primary" style={{

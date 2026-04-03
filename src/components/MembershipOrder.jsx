@@ -221,11 +221,12 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                 <div style={{ padding: '1.25rem', background: '#f8fafc', borderRadius: '20px', marginBottom: '1.5rem', border: '1px solid #e2e8f0' }}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label className="form-label" style={{ fontWeight: 700 }}>상품 선택</label>
-                        <div style={{ position: 'relative' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '12px', border: '1px solid #cbd5e1', padding: '0 1.2rem', height: '54px' }}>
+                            <Package size={18} color="#94a3b8" style={{ flexShrink: 0 }} />
                             <select
                                 value={selectedProductId}
                                 onChange={(e) => setSelectedProductId(e.target.value)}
-                                style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }}
+                                style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', padding: 0, minWidth: 0 }}
                             >
                                 <option value="">상품을 선택하세요</option>
                                 {filteredProducts.map(p => {
@@ -237,22 +238,21 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                                     );
                                 })}
                             </select>
-                            <Package size={18} color="#94a3b8" style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)' }} />
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
                         <div style={{ flex: 1 }}>
                             <label className="form-label" style={{ fontWeight: 700 }}>수량</label>
-                            <div style={{ position: 'relative' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '12px', border: '1px solid #cbd5e1', padding: '0 1.2rem', height: '54px' }}>
+                                <Hash size={18} color="#94a3b8" style={{ flexShrink: 0 }} />
                                 <input
                                     type="number"
                                     min="1"
                                     value={quantity}
                                     onChange={(e) => setQuantity(Number(e.target.value))}
-                                    style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }}
+                                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', padding: 0, minWidth: 0 }}
                                 />
-                                <Hash size={18} color="#94a3b8" style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)' }} />
                             </div>
                         </div>
                         <button
@@ -319,20 +319,19 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                     </div>
                 )}
 
-                {/* Basic Fields */}
-                <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem', marginTop: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.25rem', marginTop: '1.5rem' }}>
                     <div className="input-group">
                         <label className="form-label" style={{ fontWeight: 700 }}>받는 사람</label>
-                        <div style={{ position: 'relative' }}>
-                            <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)} style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }} />
-                            <User size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '12px', border: '1px solid #cbd5e1', padding: '0 1.2rem', height: '54px' }}>
+                            <User size={18} color="#94a3b8" style={{ flexShrink: 0 }} />
+                            <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="이름 입력" style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', minWidth: 0, padding: 0 }} />
                         </div>
                     </div>
                     <div className="input-group">
                         <label className="form-label" style={{ fontWeight: 700 }}>전화번호</label>
-                        <div style={{ position: 'relative' }}>
-                            <input type="text" value={phone} onChange={(e) => setPhone(autoHyphen(e.target.value))} maxLength={13} style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }} />
-                            <Phone size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '12px', border: '1px solid #cbd5e1', padding: '0 1.2rem', height: '54px' }}>
+                            <Phone size={18} color="#94a3b8" style={{ flexShrink: 0 }} />
+                            <input type="text" value={phone} onChange={(e) => setPhone(autoHyphen(e.target.value))} maxLength={13} placeholder="010-0000-0000" style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', minWidth: 0, padding: 0 }} />
                         </div>
                     </div>
                 </div>
@@ -340,18 +339,18 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                 {!isYakView && (
                     <div style={{ marginBottom: '1.25rem' }}>
                         <label className="form-label" style={{ fontWeight: 700 }}>멤버십 고유 키</label>
-                        <div style={{ position: 'relative' }}>
-                            <input type="text" value={membershipKey} onChange={(e) => setMembershipKey(e.target.value)} style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }} />
-                            <CreditCard size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: '12px', border: '1px solid #cbd5e1', padding: '0 1.2rem', height: '54px' }}>
+                            <CreditCard size={18} color="#94a3b8" style={{ flexShrink: 0 }} />
+                            <input type="text" value={membershipKey} onChange={(e) => setMembershipKey(e.target.value)} placeholder="멤버십 키 입력" style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', minWidth: 0, padding: 0 }} />
                         </div>
                     </div>
                 )}
 
                 <div style={{ marginBottom: '1.5rem' }}>
                     <label className="form-label" style={{ fontWeight: 700 }}>배송 주소</label>
-                    <div style={{ position: 'relative' }}>
-                        <textarea value={address} onChange={(e) => setAddress(e.target.value)} style={{ paddingLeft: '3.5rem', minHeight: '80px', paddingTop: '1rem', width: '100%', boxSizing: 'border-box', borderRadius: '15px', border: '1px solid #e2e8f0' }} />
-                        <MapPin size={18} style={{ position: 'absolute', left: '1.2rem', top: '1.2rem', color: '#94a3b8' }} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', background: '#fff', borderRadius: '12px', border: '1px solid #cbd5e1', padding: '1.2rem', minHeight: '80px' }}>
+                        <MapPin size={18} color="#94a3b8" style={{ flexShrink: 0, marginTop: '4px' }} />
+                        <textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="상세 주소를 입력하세요" style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.75rem', fontSize: '1rem', minWidth: 0, padding: 0, minHeight: '50px', resize: 'vertical' }} />
                     </div>
                 </div>
 
