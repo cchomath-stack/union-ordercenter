@@ -229,7 +229,7 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                             <select
                                 value={selectedProductId}
                                 onChange={(e) => setSelectedProductId(e.target.value)}
-                                style={{ paddingLeft: '3rem', height: '54px' }}
+                                style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }}
                             >
                                 <option value="">상품을 선택하세요</option>
                                 {filteredProducts.map(p => {
@@ -254,7 +254,7 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                                     min="1"
                                     value={quantity}
                                     onChange={(e) => setQuantity(Number(e.target.value))}
-                                    style={{ paddingLeft: '3rem', height: '54px' }}
+                                    style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }}
                                 />
                                 <Hash size={18} color="#94a3b8" style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)' }} />
                             </div>
@@ -328,14 +328,14 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                     <div className="input-group">
                         <label className="form-label" style={{ fontWeight: 700 }}>받는 사람</label>
                         <div style={{ position: 'relative' }}>
-                            <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)} style={{ paddingLeft: '3rem', height: '54px' }} />
+                            <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)} style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }} />
                             <User size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                         </div>
                     </div>
                     <div className="input-group">
                         <label className="form-label" style={{ fontWeight: 700 }}>전화번호</label>
                         <div style={{ position: 'relative' }}>
-                            <input type="text" value={phone} onChange={(e) => setPhone(autoHyphen(e.target.value))} maxLength={13} style={{ paddingLeft: '3rem', height: '54px' }} />
+                            <input type="text" value={phone} onChange={(e) => setPhone(autoHyphen(e.target.value))} maxLength={13} style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }} />
                             <Phone size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                         </div>
                     </div>
@@ -345,7 +345,7 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                     <div style={{ marginBottom: '1.25rem' }}>
                         <label className="form-label" style={{ fontWeight: 700 }}>멤버십 고유 키</label>
                         <div style={{ position: 'relative' }}>
-                            <input type="text" value={membershipKey} onChange={(e) => setMembershipKey(e.target.value)} style={{ paddingLeft: '3rem', height: '54px' }} />
+                            <input type="text" value={membershipKey} onChange={(e) => setMembershipKey(e.target.value)} style={{ paddingLeft: '3.5rem', height: '54px', width: '100%', boxSizing: 'border-box' }} />
                             <CreditCard size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                         </div>
                     </div>
@@ -354,7 +354,7 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                 <div style={{ marginBottom: '1.5rem' }}>
                     <label className="form-label" style={{ fontWeight: 700 }}>배송 주소</label>
                     <div style={{ position: 'relative' }}>
-                        <textarea value={address} onChange={(e) => setAddress(e.target.value)} style={{ paddingLeft: '3rem', minHeight: '80px', paddingTop: '1rem', width: '100%', borderRadius: '15px', border: '1px solid #e2e8f0' }} />
+                        <textarea value={address} onChange={(e) => setAddress(e.target.value)} style={{ paddingLeft: '3.5rem', minHeight: '80px', paddingTop: '1rem', width: '100%', boxSizing: 'border-box', borderRadius: '15px', border: '1px solid #e2e8f0' }} />
                         <MapPin size={18} style={{ position: 'absolute', left: '1.2rem', top: '1.2rem', color: '#94a3b8' }} />
                     </div>
                 </div>
@@ -362,11 +362,11 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
                 <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', marginBottom: '1.5rem' }}>
                     <label style={{ fontWeight: 700, marginBottom: '0.75rem', display: 'block' }}>📑 증빙 서류</label>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <select value={receiptType} onChange={(e) => setReceiptType(e.target.value)} style={{ height: '54px', flex: 1 }}>
+                        <select value={receiptType} onChange={(e) => setReceiptType(e.target.value)} style={{ height: '54px', flex: 1, boxSizing: 'border-box' }}>
                             <option value="현금영수증">현금영수증</option>
                             <option value="세금계산서">세금계산서</option>
                         </select>
-                        <input type="text" placeholder="번호 입력" value={bizNumber} onChange={(e) => setBizNumber(e.target.value)} style={{ height: '54px', flex: 2 }} />
+                        <input type="text" placeholder="번호 입력" value={bizNumber} onChange={(e) => setBizNumber(e.target.value)} style={{ height: '54px', flex: 2, boxSizing: 'border-box', paddingLeft: '1rem' }} />
                     </div>
                 </div>
 
