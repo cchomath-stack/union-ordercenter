@@ -207,11 +207,7 @@ const MembershipOrder = ({ viewType, products = [], onAddOrder, memberships = []
     return (
         <div className="membership-order-container" style={{ padding: '10px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
 
-            {/* Visual Debug Log for user to see direct feedback */}
-            <div style={{ padding: '8px 15px', background: '#334155', borderRadius: '12px', marginBottom: '15px', fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'monospace' }}>
-                <p style={{ margin: '0 0 5px 0', borderBottom: '1px solid #475569', color: '#cbd5e1' }}>⚙️ SYSTEM LOG (실시간 감시)</p>
-                {debugLogs.length === 0 ? "대기 중..." : debugLogs.map((log, i) => <div key={i}>{log}</div>)}
-            </div>
+            {/* Removed visual debug log based on user preference */}
 
             <div className="card shadow-lg p-4 p-md-5 border-0" style={{ borderRadius: '24px', background: '#fff', marginBottom: '2rem' }}>
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
