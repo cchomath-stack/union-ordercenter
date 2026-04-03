@@ -645,7 +645,7 @@ const AdminPanel = ({
                                 <select
                                     value={membershipType}
                                     onChange={(e) => setMembershipType(e.target.value)}
-                                    style={{ height: '40px', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', borderRadius: '8px', color: '#fff', width: '100%', padding: '0 10px' }}
+                                    style={{ height: '40px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#0f172a', width: '100%', padding: '0 10px', fontWeight: 600 }}
                                 >
                                     <option value="X">X멤버십 (x17)</option>
                                     <option value="R">R멤버십 (r17)</option>
